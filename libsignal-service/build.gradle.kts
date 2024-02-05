@@ -99,3 +99,11 @@ dependencies {
   testFixturesImplementation(libs.libsignal.client)
   testFixturesImplementation(testLibs.junit.junit)
 }
+tasks.named("sourcesJar") {
+  // other configurations for sourcesJar task
+  dependsOn(":libsignal-service:generateMainProtos")
+}
+
+
+
+
