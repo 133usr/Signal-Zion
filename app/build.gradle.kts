@@ -87,7 +87,7 @@ ktlint {
 }
 
 android {
-  namespace = "org.thoughtcrime.securesms"
+  namespace = "seraph.zion.signal"
 
   buildToolsVersion = signalBuildToolsVersion
   compileSdkVersion = signalCompileSdkVersion
@@ -235,7 +235,7 @@ android {
       }
     }
 
-    testInstrumentationRunner = "org.thoughtcrime.securesms.testing.SignalTestRunner"
+    testInstrumentationRunner = "seraph.zion.signal.testing.SignalTestRunner"
     testInstrumentationRunnerArguments["clearPackageData"] = "true"
   }
 

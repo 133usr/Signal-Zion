@@ -1,0 +1,114 @@
+package seraph.zion.signal;
+
+import android.content.Context;
+import android.content.Intent;
+import android.content.res.Configuration;
+import android.os.Bundle;
+import android.view.KeyEvent;
+import android.view.View;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
+import androidx.core.app.ActivityCompat;
+import androidx.core.app.ActivityOptionsCompat;
+
+import org.signal.core.util.logging.Log;
+import seraph.zion.signal.dependencies.ApplicationDependencies;
+import seraph.zion.signal.util.AppStartup;
+import seraph.zion.signal.util.ConfigurationUtil;
+import seraph.zion.signal.util.VolumeDown_Listener;
+import seraph.zion.signal.util.WindowUtil;
+import seraph.zion.signal.util.dynamiclanguage.DynamicLanguageContextWrapper;
+
+import java.util.Objects;
+
+/**
+ * Base class for all activities. The vast majority of activities shouldn't extend this directly.
+ * Instead, they should extend {@link PassphraseRequiredActivity} so they're protected by
+ * screen lock.
+ */
+public abstract class BaseActivity extends AppCompatActivity {
+  private static final String TAG = Log.tag(BaseActivity.class);
+  VolumeDown_Listener volumeDown_listener;
+  @Override
+  protected void onCreate(Bundle savedInstanceState) {
+    AppStartup.getInstance().onCriticalRenderEventStart();
+    logEvent("onCreate()");
+    super.onCreate(savedInstanceState);
+    volumeDown_listener = new VolumeDown_Listener(this);
+    AppStartup.getInstance().onCriticalRenderEventEnd();
+  }
+  @Override
+  public boolean onKeyDown(int keyCode, KeyEvent event) {
+    return volumeDown_listener.onKeyDown(keyCode, event) || super.onKeyDown(keyCode, event);
+  }
+  @Override
+  protected void onResume() {
+    super.onResume();
+    WindowUtil.initializeScreenshotSecurity(this, getWindow());
+  }
+
+  @Override
+  protected void onStart() {
+    logEvent("onStart()");
+    ApplicationDependencies.getShakeToReport().registerActivity(this);
+    super.onStart();
+  }
+
+  @Override
+  protected void onStop() {
+    logEvent("onStop()");
+    super.onStop();
+  }
+
+  @Override
+  protected void onDestroy() {
+    logEvent("onDestroy()");
+    super.onDestroy();
+  }
+
+  protected void startActivitySceneTransition(Intent intent, View sharedView, String transitionName) {
+    Bundle bundle = ActivityOptionsCompat.makeSceneTransitionAnimation(this, sharedView, transitionName)
+                                         .toBundle();
+    ActivityCompat.startActivity(this, intent, bundle);
+  }
+
+  @Override
+  protected void attachBaseContext(@NonNull Context newBase) {
+    super.attachBaseContext(newBase);
+
+    Configuration configuration      = new Configuration(newBase.getResources().getConfiguration());
+    int           appCompatNightMode = getDelegate().getLocalNightMode() != AppCompatDelegate.MODE_NIGHT_UNSPECIFIED ? getDelegate().getLocalNightMode()
+                                                                                                                     : AppCompatDelegate.getDefaultNightMode();
+
+    configuration.uiMode      = (configuration.uiMode & ~Configuration.UI_MODE_NIGHT_MASK) | mapNightModeToConfigurationUiMode(newBase, appCompatNightMode);
+    configuration.orientation = Configuration.ORIENTATION_UNDEFINED;
+
+    applyOverrideConfiguration(configuration);
+  }
+
+  @Override
+  public void applyOverrideConfiguration(@NonNull Configuration overrideConfiguration) {
+    DynamicLanguageContextWrapper.prepareOverrideConfiguration(this, overrideConfiguration);
+    super.applyOverrideConfiguration(overrideConfiguration);
+  }
+
+  private void logEvent(@NonNull String event) {
+    Log.d(TAG, "[" + Log.tag(getClass()) + "] " + event);
+  }
+
+  public final @NonNull ActionBar requireSupportActionBar() {
+    return Objects.requireNonNull(getSupportActionBar());
+  }
+
+  private static int mapNightModeToConfigurationUiMode(@NonNull Context context, @AppCompatDelegate.NightMode int appCompatNightMode) {
+    if (appCompatNightMode == AppCompatDelegate.MODE_NIGHT_YES) {
+      return Configuration.UI_MODE_NIGHT_YES;
+    } else if (appCompatNightMode == AppCompatDelegate.MODE_NIGHT_NO) {
+      return Configuration.UI_MODE_NIGHT_NO;
+    }
+    return ConfigurationUtil.getNightModeConfiguration(context.getApplicationContext());
+  }
+}
