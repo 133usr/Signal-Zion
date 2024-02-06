@@ -26,4 +26,8 @@
     <item android:title="@string/ConversationListFragment__notification_profile"
           android:id="@+id/menu_notification_profile" />
 
+    <item android:title="@string/ConversationListFragment__delete_account"
+        android:id="@+id/menu_delete_account"
+        />
+
 </menu>

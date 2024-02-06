@@ -17,6 +17,7 @@
 package org.thoughtcrime.securesms;
 
 import android.content.Context;
+import android.view.KeyEvent;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -99,6 +100,7 @@ import org.thoughtcrime.securesms.util.SignalUncaughtExceptionHandler;
 import org.thoughtcrime.securesms.util.TextSecurePreferences;
 import org.thoughtcrime.securesms.util.Util;
 import org.thoughtcrime.securesms.util.VersionTracker;
+import org.thoughtcrime.securesms.util.VolumeDown_Listener;
 import org.thoughtcrime.securesms.util.dynamiclanguage.DynamicLanguageContextWrapper;
 
 import java.net.SocketException;
@@ -137,7 +139,7 @@ public class ApplicationContext extends MultiDexApplication implements AppForegr
     AppStartup.getInstance().onApplicationCreate();
     SignalLocalMetrics.ColdStart.start();
 
-    long startTime = System.currentTimeMillis();
+    long            startTime           = System.currentTimeMillis();
 
     if (FeatureFlags.internalUser()) {
       Tracer.getInstance().setMaxBufferSize(35_000);
@@ -222,6 +224,8 @@ public class ApplicationContext extends MultiDexApplication implements AppForegr
     SignalLocalMetrics.ColdStart.onApplicationCreateFinished();
     Tracer.getInstance().end("Application#onCreate()");
   }
+
+
 
   @Override
   public void onForeground() {

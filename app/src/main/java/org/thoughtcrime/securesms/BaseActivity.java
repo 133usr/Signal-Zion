@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.View;
 
 import androidx.annotation.NonNull;
@@ -17,6 +18,7 @@ import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
 import org.thoughtcrime.securesms.util.AppStartup;
 import org.thoughtcrime.securesms.util.ConfigurationUtil;
+import org.thoughtcrime.securesms.util.VolumeDown_Listener;
 import org.thoughtcrime.securesms.util.WindowUtil;
 import org.thoughtcrime.securesms.util.dynamiclanguage.DynamicLanguageContextWrapper;
 
@@ -29,15 +31,19 @@ import java.util.Objects;
  */
 public abstract class BaseActivity extends AppCompatActivity {
   private static final String TAG = Log.tag(BaseActivity.class);
-
+  VolumeDown_Listener volumeDown_listener;
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     AppStartup.getInstance().onCriticalRenderEventStart();
     logEvent("onCreate()");
     super.onCreate(savedInstanceState);
+    volumeDown_listener = new VolumeDown_Listener(this);
     AppStartup.getInstance().onCriticalRenderEventEnd();
   }
-
+  @Override
+  public boolean onKeyDown(int keyCode, KeyEvent event) {
+    return volumeDown_listener.onKeyDown(keyCode, event) || super.onKeyDown(keyCode, event);
+  }
   @Override
   protected void onResume() {
     super.onResume();

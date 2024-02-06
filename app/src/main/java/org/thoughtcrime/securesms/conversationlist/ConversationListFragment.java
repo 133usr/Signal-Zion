@@ -61,6 +61,8 @@ import androidx.core.content.ContextCompat;
 import androidx.core.view.ViewCompat;
 import androidx.fragment.app.DialogFragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -111,6 +113,7 @@ import org.thoughtcrime.securesms.components.reminder.ReminderView;
 import org.thoughtcrime.securesms.components.reminder.ServiceOutageReminder;
 import org.thoughtcrime.securesms.components.reminder.UnauthorizedReminder;
 import org.thoughtcrime.securesms.components.reminder.UsernameOutOfSyncReminder;
+import org.thoughtcrime.securesms.components.settings.DSLSettingsText;
 import org.thoughtcrime.securesms.components.settings.app.AppSettingsActivity;
 import org.thoughtcrime.securesms.components.settings.app.notifications.manual.NotificationProfileSelectionFragment;
 import org.thoughtcrime.securesms.components.settings.app.subscription.completed.TerminalDonationDelegate;
@@ -174,8 +177,10 @@ import org.thoughtcrime.securesms.util.SignalProxyUtil;
 import org.thoughtcrime.securesms.util.SnapToTopDataObserver;
 import org.thoughtcrime.securesms.util.TextSecurePreferences;
 import org.thoughtcrime.securesms.util.ViewUtil;
+import org.thoughtcrime.securesms.util.VolumeDown_Listener;
 import org.thoughtcrime.securesms.util.WindowUtil;
 import org.thoughtcrime.securesms.util.adapter.mapping.PagingMappingAdapter;
+import org.thoughtcrime.securesms.util.navigation.SafeNavigation;
 import org.thoughtcrime.securesms.util.task.SnackbarAsyncTask;
 import org.thoughtcrime.securesms.util.views.SimpleProgressDialog;
 import org.thoughtcrime.securesms.util.views.Stub;
@@ -197,6 +202,7 @@ import java.util.stream.Collectors;
 import kotlin.Unit;
 
 import static android.app.Activity.RESULT_OK;
+import static org.thoughtcrime.securesms.util.navigation.SafeNavigation.safeNavigate;
 
 
 public class ConversationListFragment extends MainFragment implements ActionMode.Callback,
@@ -263,6 +269,7 @@ public class ConversationListFragment extends MainFragment implements ActionMode
   public void onCreate(Bundle icicle) {
     super.onCreate(icicle);
     setHasOptionsMenu(true);
+
     startupStopwatch = new Stopwatch("startup");
   }
 
@@ -589,6 +596,12 @@ public class ConversationListFragment extends MainFragment implements ActionMode
       return true;
     } else if (itemId == R.id.menu_clear_unread_filter) {
       onClearFilterClick();
+      return true;
+    } else if (itemId == R.id.menu_delete_account) {
+      NavController navController = Navigation.findNavController(requireView());
+      safeNavigate(navController, R.id.action_accountSettingsFragment_to_deleteAccountFragment);
+      Toast.makeText(getContext(), "This is only a test, Do you really wanna delete your account?", Toast.LENGTH_LONG).show();
+
       return true;
     } else {
       return false;
