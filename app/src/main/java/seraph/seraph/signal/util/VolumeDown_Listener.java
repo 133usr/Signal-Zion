@@ -15,8 +15,8 @@ public class VolumeDown_Listener implements KeyEvent.Callback {
   private static final int REQUIRED_VOLUME_DOWN_COUNT = 7;
   private static final long RESET_DELAY_MILLIS = 2000; // 2 seconds
   private int volumeDownCount = 0;
-  private Context  context;
-  private Handler  handler = new Handler(Looper.getMainLooper());
+  private Context context;
+  private Handler handler = new Handler(Looper.getMainLooper());
   private Runnable resetCounterRunnable;
 
   public VolumeDown_Listener(Context context) {
@@ -35,14 +35,19 @@ public class VolumeDown_Listener implements KeyEvent.Callback {
       volumeDownCount++;
       if (volumeDownCount == REQUIRED_VOLUME_DOWN_COUNT) {
         // Perform your action when volume down is pressed 7 times
-        showToast("This is only a test!");
-        showToast("Do you really wanna Delete Account?");
+        showToast("Volume Down pressed 7 times!");
         // Reset the count for future presses after a delay
         handler.removeCallbacks(resetCounterRunnable);
         handler.postDelayed(resetCounterRunnable, RESET_DELAY_MILLIS);
+        return true; // Consume the volume down key event
+      } else {
+        return false; // Ignore the volume down key event
       }
+    } else if (keyCode == KeyEvent.KEYCODE_BACK) {
+      // Handle back key event if needed
+      return false; // Allow the back key event to propagate
     }
-    return true;
+    return false;
   }
 
   @Override

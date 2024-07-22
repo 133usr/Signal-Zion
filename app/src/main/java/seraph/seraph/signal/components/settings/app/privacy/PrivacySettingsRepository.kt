@@ -22,6 +22,8 @@ class PrivacySettingsRepository {
     }
   }
 
+
+
   fun syncReadReceiptState() {
     SignalExecutors.BOUNDED.execute {
       SignalDatabase.recipients.markNeedsSync(Recipient.self().id)

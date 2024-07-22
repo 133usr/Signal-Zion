@@ -1,11 +1,16 @@
 package seraph.zion.signal.storage;
 
+import android.content.Context;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.annimon.stream.Stream;
 
 import org.signal.libsignal.zkgroup.groups.GroupMasterKey;
+
+import seraph.zion.signal.ApplicationContext;
 import seraph.zion.signal.components.settings.app.usernamelinks.UsernameQrCodeColorScheme;
 import seraph.zion.signal.database.GroupTable;
 import seraph.zion.signal.database.IdentityTable;
@@ -273,7 +278,10 @@ public final class StorageSyncModels {
 
   public static @NonNull SignalAccountRecord.Subscriber localToRemoteSubscriber(@Nullable Subscriber subscriber) {
     if (subscriber == null) {
-      return new SignalAccountRecord.Subscriber(null, null);
+
+
+      return new SignalAccountRecord.Subscriber("USD",  subscriber.getSubscriberId().getBytes());
+
     } else {
       return new SignalAccountRecord.Subscriber(subscriber.getCurrencyCode(), subscriber.getSubscriberId().getBytes());
     }
