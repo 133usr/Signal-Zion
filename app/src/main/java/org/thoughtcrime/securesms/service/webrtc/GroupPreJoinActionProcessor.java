@@ -47,10 +47,11 @@ public class GroupPreJoinActionProcessor extends GroupActionProcessor {
 
     byte[]      groupId = currentState.getCallInfoState().getCallRecipient().requireGroupId().getDecodedId();
     GroupCall groupCall = webRtcInteractor.getCallManager().createGroupCall(groupId,
-                                                                            SignalStore.internalValues().groupCallingServer(),
+                                                                            SignalStore.internal().groupCallingServer(),
                                                                             new byte[0],
                                                                             AUDIO_LEVELS_INTERVAL,
                                                                             RingRtcDynamicConfiguration.getAudioProcessingMethod(),
+                                                                            RingRtcDynamicConfiguration.shouldUseOboeAdm(),
                                                                             webRtcInteractor.getGroupCallObserver());
 
     try {
@@ -125,7 +126,7 @@ public class GroupPreJoinActionProcessor extends GroupActionProcessor {
 
     WebRtcServiceStateBuilder.CallInfoStateBuilder builder = currentState.builder()
                                                                          .changeCallInfoState()
-                                                                         .remoteDevicesCount(peekInfo.getDeviceCount())
+                                                                         .remoteDevicesCount(peekInfo.getDeviceCountExcludingPendingDevices())
                                                                          .participantLimit(peekInfo.getMaxDevices())
                                                                          .clearParticipantMap();
 

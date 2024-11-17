@@ -4,13 +4,13 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import org.signal.core.util.logging.Log;
-import org.thoughtcrime.securesms.crypto.UnidentifiedAccessUtil;
 import org.thoughtcrime.securesms.database.RecipientTable;
 import org.thoughtcrime.securesms.database.RecipientTable.RecipientReader;
 import org.thoughtcrime.securesms.database.SignalDatabase;
-import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
+import org.thoughtcrime.securesms.dependencies.AppDependencies;
 import org.thoughtcrime.securesms.jobmanager.Job;
 import org.thoughtcrime.securesms.jobmanager.impl.NetworkConstraint;
+import org.thoughtcrime.securesms.keyvalue.SignalStore;
 import org.thoughtcrime.securesms.net.NotPushRegisteredException;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientUtil;
@@ -66,7 +66,7 @@ public class MultiDeviceBlockedUpdateJob extends BaseJob {
       throw new NotPushRegisteredException();
     }
 
-    if (!TextSecurePreferences.isMultiDevice(context)) {
+    if (!SignalStore.account().hasLinkedDevices()) {
       Log.i(TAG, "Not multi device, aborting...");
       return;
     }
@@ -82,14 +82,14 @@ public class MultiDeviceBlockedUpdateJob extends BaseJob {
       while ((recipient = reader.getNext()) != null) {
         if (recipient.isPushGroup()) {
           blockedGroups.add(recipient.requireGroupId().getDecodedId());
-        } else if (recipient.isMaybeRegistered() && (recipient.hasServiceId() || recipient.hasE164())) {
+        } else if (recipient.isMaybeRegistered() && (recipient.getHasServiceId() || recipient.getHasE164())) {
           blockedIndividuals.add(RecipientUtil.toSignalServiceAddress(context, recipient));
         }
       }
 
-      SignalServiceMessageSender messageSender = ApplicationDependencies.getSignalServiceMessageSender();
-      messageSender.sendSyncMessage(SignalServiceSyncMessage.forBlocked(new BlockedListMessage(blockedIndividuals, blockedGroups)),
-                                    UnidentifiedAccessUtil.getAccessForSync(context));
+      SignalServiceMessageSender messageSender = AppDependencies.getSignalServiceMessageSender();
+      messageSender.sendSyncMessage(SignalServiceSyncMessage.forBlocked(new BlockedListMessage(blockedIndividuals, blockedGroups))
+      );
     }
   }
 

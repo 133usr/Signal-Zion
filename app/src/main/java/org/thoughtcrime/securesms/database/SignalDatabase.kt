@@ -23,15 +23,15 @@ import org.thoughtcrime.securesms.service.KeyCachingService
 import org.thoughtcrime.securesms.util.TextSecurePreferences
 import java.io.File
 
-open class SignalDatabase(private val context: Application, databaseSecret: DatabaseSecret, attachmentSecret: AttachmentSecret) :
+open class SignalDatabase(private val context: Application, databaseSecret: DatabaseSecret, attachmentSecret: AttachmentSecret, name: String = DATABASE_NAME) :
   SQLiteOpenHelper(
     context,
-    DATABASE_NAME,
+    name,
     databaseSecret.asString(),
     null,
     SignalDatabaseMigrations.DATABASE_VERSION,
     0,
-    SqlCipherErrorHandler(DATABASE_NAME),
+    SqlCipherErrorHandler(name),
     SqlCipherDatabaseHook(),
     true
   ),
@@ -73,6 +73,10 @@ open class SignalDatabase(private val context: Application, databaseSecret: Data
   val callTable: CallTable = CallTable(context, this)
   val kyberPreKeyTable: KyberPreKeyTable = KyberPreKeyTable(context, this)
   val callLinkTable: CallLinkTable = CallLinkTable(context, this)
+  val nameCollisionTables: NameCollisionTables = NameCollisionTables(context, this)
+  val inAppPaymentTable: InAppPaymentTable = InAppPaymentTable(context, this)
+  val inAppPaymentSubscriberTable: InAppPaymentSubscriberTable = InAppPaymentSubscriberTable(context, this)
+  val chatFoldersTable: ChatFolderTables = ChatFolderTables(context, this)
 
   override fun onOpen(db: net.zetetic.database.sqlcipher.SQLiteDatabase) {
     db.setForeignKeyConstraintsEnabled(true)
@@ -109,11 +113,15 @@ open class SignalDatabase(private val context: Application, databaseSecret: Data
     db.execSQL(CallLinkTable.CREATE_TABLE)
     db.execSQL(CallTable.CREATE_TABLE)
     db.execSQL(KyberPreKeyTable.CREATE_TABLE)
+    executeStatements(db, NameCollisionTables.CREATE_TABLE)
+    db.execSQL(InAppPaymentTable.CREATE_TABLE)
+    db.execSQL(InAppPaymentSubscriberTable.CREATE_TABLE)
     executeStatements(db, SearchTable.CREATE_TABLE)
     executeStatements(db, RemappedRecordTables.CREATE_TABLE)
     executeStatements(db, MessageSendLogTables.CREATE_TABLE)
     executeStatements(db, NotificationProfileDatabase.CREATE_TABLE)
     executeStatements(db, DistributionListTables.CREATE_TABLE)
+    executeStatements(db, ChatFolderTables.CREATE_TABLE)
 
     executeStatements(db, RecipientTable.CREATE_INDEXS)
     executeStatements(db, MessageTable.CREATE_INDEXS)
@@ -135,11 +143,14 @@ open class SignalDatabase(private val context: Application, databaseSecret: Data
     executeStatements(db, CallTable.CREATE_INDEXES)
     executeStatements(db, ReactionTable.CREATE_INDEXES)
     executeStatements(db, KyberPreKeyTable.CREATE_INDEXES)
+    executeStatements(db, ChatFolderTables.CREATE_INDEXES)
+    executeStatements(db, NameCollisionTables.CREATE_INDEXES)
 
     executeStatements(db, SearchTable.CREATE_TRIGGERS)
     executeStatements(db, MessageSendLogTables.CREATE_TRIGGERS)
 
     DistributionListTables.insertInitialDistributionListAtCreationTime(db)
+    ChatFolderTables.insertInitialChatFoldersAtCreationTime(db)
 
     if (context.getDatabasePath(ClassicOpenHelper.NAME).exists()) {
       val legacyHelper = ClassicOpenHelper(context)
@@ -211,7 +222,7 @@ open class SignalDatabase(private val context: Application, databaseSecret: Data
 
   companion object {
     private val TAG = Log.tag(SignalDatabase::class.java)
-    private const val DATABASE_NAME = "signal.db"
+    const val DATABASE_NAME = "signal.db"
 
     @JvmStatic
     @Volatile
@@ -238,6 +249,14 @@ open class SignalDatabase(private val context: Application, databaseSecret: Data
     @JvmStatic
     val rawDatabase: net.zetetic.database.sqlcipher.SQLiteDatabase
       get() = instance!!.rawWritableDatabase
+
+    @JvmStatic
+    val readableDatabase: SQLiteDatabase
+      get() = instance!!.signalReadableDatabase
+
+    @JvmStatic
+    val writableDatabase: SQLiteDatabase
+      get() = instance!!.signalWritableDatabase
 
     @JvmStatic
     val backupDatabase: net.zetetic.database.sqlcipher.SQLiteDatabase
@@ -283,7 +302,8 @@ open class SignalDatabase(private val context: Application, databaseSecret: Data
           instance!!.messageTable.deleteAbandonedMessages()
           instance!!.messageTable.trimEntriesForExpiredMessages()
           instance!!.reactionTable.deleteAbandonedReactions()
-          instance!!.searchTable.fullyResetTables()
+          instance!!.searchTable.fullyResetTables(useTransaction = false)
+          instance!!.recipientTable.clearFileWallpapersPostBackupRestore()
           instance!!.rawWritableDatabase.execSQL("DROP TABLE IF EXISTS key_value")
           instance!!.rawWritableDatabase.execSQL("DROP TABLE IF EXISTS megaphone")
           instance!!.rawWritableDatabase.execSQL("DROP TABLE IF EXISTS job_spec")
@@ -526,5 +546,25 @@ open class SignalDatabase(private val context: Application, databaseSecret: Data
     @get:JvmName("callLinks")
     val callLinks: CallLinkTable
       get() = instance!!.callLinkTable
+
+    @get:JvmStatic
+    @get:JvmName("nameCollisions")
+    val nameCollisions: NameCollisionTables
+      get() = instance!!.nameCollisionTables
+
+    @get:JvmStatic
+    @get:JvmName("inAppPayments")
+    val inAppPayments: InAppPaymentTable
+      get() = instance!!.inAppPaymentTable
+
+    @get:JvmStatic
+    @get:JvmName("inAppPaymentSubscribers")
+    val inAppPaymentSubscribers: InAppPaymentSubscriberTable
+      get() = instance!!.inAppPaymentSubscriberTable
+
+    @get:JvmStatic
+    @get:JvmName("chatFolders")
+    val chatFolders: ChatFolderTables
+      get() = instance!!.chatFoldersTable
   }
 }

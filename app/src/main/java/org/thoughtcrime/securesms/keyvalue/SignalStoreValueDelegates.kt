@@ -1,6 +1,8 @@
 package org.thoughtcrime.securesms.keyvalue
 
 import com.squareup.wire.ProtoAdapter
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import org.signal.core.util.LongSerializer
 import kotlin.reflect.KProperty
 
@@ -28,6 +30,10 @@ internal fun SignalStoreValues.blobValue(key: String, default: ByteArray): Signa
   return BlobValue(key, default, this.store)
 }
 
+internal fun SignalStoreValues.nullableBlobValue(key: String, default: ByteArray?): SignalStoreValueDelegate<ByteArray?> {
+  return NullableBlobValue(key, default, this.store)
+}
+
 internal fun <T : Any?> SignalStoreValues.enumValue(key: String, default: T, serializer: LongSerializer<T>): SignalStoreValueDelegate<T> {
   return KeyValueEnumValue(key, default, serializer, this.store)
 }
@@ -41,12 +47,22 @@ internal fun <M> SignalStoreValues.protoValue(key: String, adapter: ProtoAdapter
  * class to callers and protect the individual implementations as private behind the various extension functions.
  */
 sealed class SignalStoreValueDelegate<T>(private val store: KeyValueStore) {
+
+  private var flow: Lazy<MutableStateFlow<T>> = lazy { MutableStateFlow(getValue(store)) }
+
   operator fun getValue(thisRef: Any?, property: KProperty<*>): T {
     return getValue(store)
   }
 
   operator fun setValue(thisRef: Any?, property: KProperty<*>, value: T) {
     setValue(store, value)
+    if (flow.isInitialized()) {
+      flow.value.tryEmit(value)
+    }
+  }
+
+  fun toFlow(): Flow<T> {
+    return flow.value
   }
 
   internal abstract fun getValue(values: KeyValueStore): T
@@ -110,6 +126,16 @@ private class BlobValue(private val key: String, private val default: ByteArray,
   }
 
   override fun setValue(values: KeyValueStore, value: ByteArray) {
+    values.beginWrite().putBlob(key, value).apply()
+  }
+}
+
+private class NullableBlobValue(private val key: String, private val default: ByteArray?, store: KeyValueStore) : SignalStoreValueDelegate<ByteArray?>(store) {
+  override fun getValue(values: KeyValueStore): ByteArray? {
+    return values.getBlob(key, default)
+  }
+
+  override fun setValue(values: KeyValueStore, value: ByteArray?) {
     values.beginWrite().putBlob(key, value).apply()
   }
 }

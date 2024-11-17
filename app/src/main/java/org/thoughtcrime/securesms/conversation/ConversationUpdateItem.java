@@ -24,6 +24,7 @@ import com.bumptech.glide.RequestManager;
 import com.google.android.material.button.MaterialButton;
 import com.google.common.collect.Sets;
 
+import org.signal.core.util.concurrent.ListenableFuture;
 import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.BindableConversationItem;
 import org.thoughtcrime.securesms.R;
@@ -36,6 +37,7 @@ import org.thoughtcrime.securesms.database.model.InMemoryMessageRecord;
 import org.thoughtcrime.securesms.database.model.LiveUpdateMessage;
 import org.thoughtcrime.securesms.database.model.MessageRecord;
 import org.thoughtcrime.securesms.database.model.UpdateDescription;
+import org.thoughtcrime.securesms.database.model.databaseprotos.GroupCallUpdateDetails;
 import org.thoughtcrime.securesms.groups.LiveGroup;
 import org.thoughtcrime.securesms.keyvalue.SignalStore;
 import org.thoughtcrime.securesms.recipients.LiveRecipient;
@@ -47,7 +49,6 @@ import org.thoughtcrime.securesms.util.ProjectionList;
 import org.thoughtcrime.securesms.util.ThemeUtil;
 import org.thoughtcrime.securesms.util.Util;
 import org.thoughtcrime.securesms.util.ViewUtil;
-import org.thoughtcrime.securesms.util.concurrent.ListenableFuture;
 import org.thoughtcrime.securesms.util.livedata.LiveDataUtil;
 import org.thoughtcrime.securesms.verify.VerifyIdentityActivity;
 import org.whispersystems.signalservice.api.push.ServiceId;
@@ -185,7 +186,7 @@ public final class ConversationUpdateItem extends FrameLayout
                       shouldCollapse(messageRecord, nextMessageRecord),
                       hasWallpaper);
 
-    presentActionButton(hasWallpaper, conversationMessage.getMessageRecord().isBoostRequest());
+    presentActionButton(hasWallpaper, conversationMessage.getMessageRecord().isReleaseChannelDonationRequest());
 
     updateSelectedState();
   }
@@ -356,7 +357,7 @@ public final class ConversationUpdateItem extends FrameLayout
 
       Set<UUID> members = liveFullMembers.getValue();
       if (members != null) {
-        return recipient.hasAci() && members.contains(recipient.requireAci().getRawUuid());
+        return recipient.getHasAci() && members.contains(recipient.requireAci().getRawUuid());
       }
       return false;
     }
@@ -447,11 +448,14 @@ public final class ConversationUpdateItem extends FrameLayout
         }
       });
     } else if (conversationMessage.getMessageRecord().isGroupCall()) {
-      UpdateDescription updateDescription = MessageRecord.getGroupCallUpdateDescription(getContext(), conversationMessage.getMessageRecord().getBody(), true);
-      Collection<ACI>   acis              = updateDescription.getMentioned();
+      GroupCallUpdateDetails groupCallUpdateDetails = GroupCallUpdateDetailsUtil.parse(conversationMessage.getMessageRecord().getBody());
+      boolean                isRingingOnLocalDevice = groupCallUpdateDetails.isRingingOnLocalDevice;
+      boolean                endedRecently          = GroupCallUpdateDetailsUtil.checkCallEndedRecently(groupCallUpdateDetails);
+      UpdateDescription      updateDescription      = MessageRecord.getGroupCallUpdateDescription(getContext(), conversationMessage.getMessageRecord().getBody(), true);
+      Collection<ACI>        acis                   = updateDescription.getMentioned();
 
       int text = 0;
-      if (Util.hasItems(acis)) {
+      if (Util.hasItems(acis) || isRingingOnLocalDevice) {
         if (acis.contains(SignalStore.account().requireAci())) {
           text = R.string.ConversationUpdateItem_return_to_call;
         } else if (GroupCallUpdateDetailsUtil.parse(conversationMessage.getMessageRecord().getBody()).isCallFull) {
@@ -459,6 +463,8 @@ public final class ConversationUpdateItem extends FrameLayout
         } else {
           text = R.string.ConversationUpdateItem_join_call;
         }
+      } else if (endedRecently) {
+        text = R.string.ConversationUpdateItem_call_back;
       }
 
       if (text != 0 && conversationRecipient.isGroup() && conversationRecipient.isActiveGroup()) {
@@ -532,7 +538,7 @@ public final class ConversationUpdateItem extends FrameLayout
           eventListener.onBlockJoinRequest(conversationMessage.getMessageRecord().getFromRecipient());
         }
       });
-    } else if (conversationMessage.getMessageRecord().isBoostRequest()) {
+    } else if (conversationMessage.getMessageRecord().isReleaseChannelDonationRequest()) {
       actionButton.setVisibility(VISIBLE);
       actionButton.setOnClickListener(v -> {
         if (batchSelected.isEmpty() && eventListener != null) {
@@ -550,7 +556,7 @@ public final class ConversationUpdateItem extends FrameLayout
       });
 
       actionButton.setText(R.string.ConversationActivity__invite_to_signal);
-    } else if (conversationMessage.getMessageRecord().isPaymentsRequestToActivate() && !conversationMessage.getMessageRecord().isOutgoing() && !SignalStore.paymentsValues().mobileCoinPaymentsEnabled()) {
+    } else if (conversationMessage.getMessageRecord().isPaymentsRequestToActivate() && !conversationMessage.getMessageRecord().isOutgoing() && !SignalStore.payments().mobileCoinPaymentsEnabled()) {
       actionButton.setText(R.string.ConversationUpdateItem_activate_payments);
       actionButton.setVisibility(VISIBLE);
       actionButton.setOnClickListener(v -> {
@@ -566,7 +572,31 @@ public final class ConversationUpdateItem extends FrameLayout
           eventListener.onSendPaymentClicked(conversationMessage.getMessageRecord().getFromRecipient().getId());
         }
       });
-    } else{
+    } else if (conversationMessage.getMessageRecord().isReportedSpam()) {
+      actionButton.setText(R.string.ConversationUpdateItem_learn_more);
+      actionButton.setVisibility(VISIBLE);
+      actionButton.setOnClickListener(v -> {
+        if (batchSelected.isEmpty() && eventListener != null) {
+          eventListener.onReportSpamLearnMoreClicked();
+        }
+      });
+    } else if (conversationMessage.getMessageRecord().isProfileChange() && !conversationMessage.getMessageRecord().getFromRecipient().isSelf()) {
+      actionButton.setText(R.string.ConversationUpdateItem_update);
+      actionButton.setVisibility(VISIBLE);
+      actionButton.setOnClickListener(v -> {
+        if (batchSelected.isEmpty() && eventListener != null) {
+          eventListener.onChangeProfileNameUpdateContact(conversationMessage.getMessageRecord().getFromRecipient());
+        }
+      });
+    } else if (conversationMessage.getMessageRecord().isMessageRequestAccepted()) {
+      actionButton.setText(R.string.ConversationUpdateItem_options);
+      actionButton.setVisibility(VISIBLE);
+      actionButton.setOnClickListener(v -> {
+        if (batchSelected.isEmpty() && eventListener != null) {
+          eventListener.onMessageRequestAcceptOptionsClicked();
+        }
+      });
+    } else {
       actionButton.setVisibility(GONE);
       actionButton.setOnClickListener(null);
     }
@@ -575,7 +605,7 @@ public final class ConversationUpdateItem extends FrameLayout
   private boolean shouldShowBlockRequestAction(MessageRecord messageRecord) {
     Recipient toBlock = messageRecord.getFromRecipient();
 
-    if (!toBlock.hasServiceId() || !groupData.isSelfAdmin() || groupData.isBanned(toBlock) || groupData.isFullMember(toBlock)) {
+    if (!toBlock.getHasServiceId() || !groupData.isSelfAdmin() || groupData.isBanned(toBlock) || groupData.isFullMember(toBlock)) {
       return false;
     }
 

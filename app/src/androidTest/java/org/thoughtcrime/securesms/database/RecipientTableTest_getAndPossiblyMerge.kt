@@ -34,15 +34,13 @@ import org.thoughtcrime.securesms.database.model.MessageRecord
 import org.thoughtcrime.securesms.database.model.ReactionRecord
 import org.thoughtcrime.securesms.database.model.databaseprotos.SessionSwitchoverEvent
 import org.thoughtcrime.securesms.database.model.databaseprotos.ThreadMergeEvent
-import org.thoughtcrime.securesms.dependencies.ApplicationDependencies
+import org.thoughtcrime.securesms.dependencies.AppDependencies
 import org.thoughtcrime.securesms.groups.GroupId
 import org.thoughtcrime.securesms.keyvalue.SignalStore
 import org.thoughtcrime.securesms.mms.IncomingMessage
 import org.thoughtcrime.securesms.notifications.profiles.NotificationProfile
 import org.thoughtcrime.securesms.recipients.Recipient
 import org.thoughtcrime.securesms.recipients.RecipientId
-import org.thoughtcrime.securesms.util.FeatureFlags
-import org.thoughtcrime.securesms.util.FeatureFlagsAccessor
 import org.thoughtcrime.securesms.util.Util
 import org.whispersystems.signalservice.api.push.ServiceId.ACI
 import org.whispersystems.signalservice.api.push.ServiceId.PNI
@@ -55,10 +53,9 @@ class RecipientTableTest_getAndPossiblyMerge {
 
   @Before
   fun setup() {
-    SignalStore.account().setE164(E164_SELF)
-    SignalStore.account().setAci(ACI_SELF)
-    SignalStore.account().setPni(PNI_SELF)
-    FeatureFlagsAccessor.forceValue(FeatureFlags.PHONE_NUMBER_PRIVACY, true)
+    SignalStore.account.setE164(E164_SELF)
+    SignalStore.account.setAci(ACI_SELF)
+    SignalStore.account.setPni(PNI_SELF)
   }
 
   @Test
@@ -779,6 +776,18 @@ class RecipientTableTest_getAndPossiblyMerge {
       expectThreadMergeEvent(E164_A)
     }
 
+    test("merge, e164+pni & e164+aci, pni+aci provided, change number") {
+      given(E164_A, PNI_A, null)
+      given(E164_B, null, ACI_A)
+
+      process(null, PNI_A, ACI_A)
+
+      expect(E164_A, PNI_A, ACI_A)
+
+      expectThreadMergeEvent(E164_A)
+      expectChangeNumberEvent()
+    }
+
     test("merge, e164 + pni reassigned, aci abandoned") {
       given(E164_A, PNI_A, ACI_A)
       given(E164_B, PNI_B, ACI_B)
@@ -789,6 +798,17 @@ class RecipientTableTest_getAndPossiblyMerge {
       expect(E164_A, PNI_A, ACI_B)
 
       expectChangeNumberEvent()
+    }
+
+    test("merge, e164 follows pni+aci") {
+      given(E164_A, PNI_A, null)
+      given(null, null, ACI_A)
+
+      process(null, PNI_A, ACI_A, pniVerified = true)
+
+      expect(E164_A, PNI_A, ACI_A)
+      expectThreadMergeEvent(E164_A)
+      expectPniVerified()
     }
 
     test("local user, local e164 and aci provided, changeSelf=false, leave e164 alone") {
@@ -893,8 +913,8 @@ class RecipientTableTest_getAndPossiblyMerge {
 
     // Thread validation
     assertEquals(threadIdAci, retrievedThreadId)
-    Assert.assertNull(SignalDatabase.threads.getThreadIdFor(recipientIdE164))
-    Assert.assertNull(SignalDatabase.threads.getThreadRecord(threadIdE164))
+    assertNull(SignalDatabase.threads.getThreadIdFor(recipientIdE164))
+    assertNull(SignalDatabase.threads.getThreadRecord(threadIdE164))
 
     // SMS validation
     val sms1: MessageRecord = SignalDatabase.messages.getMessageRecord(smsId1)!!
@@ -938,10 +958,10 @@ class RecipientTableTest_getAndPossiblyMerge {
 
     // Identity validation
     assertEquals(identityKeyAci, SignalDatabase.identities.getIdentityStoreRecord(ACI_A.toString())!!.identityKey)
-    Assert.assertNull(SignalDatabase.identities.getIdentityStoreRecord(E164_A))
+    assertNull(SignalDatabase.identities.getIdentityStoreRecord(E164_A))
 
     // Session validation
-    Assert.assertNotNull(SignalDatabase.sessions.load(ACI_SELF, SignalProtocolAddress(ACI_A.toString(), 1)))
+    assertNotNull(SignalDatabase.sessions.load(ACI_SELF, SignalProtocolAddress(ACI_A.toString(), 1)))
 
     // Reaction validation
     val reactionsSms: List<ReactionRecord> = SignalDatabase.reactions.getReactions(MessageId(smsId1))
@@ -1083,8 +1103,8 @@ class RecipientTableTest_getAndPossiblyMerge {
 
     init {
       // Need to delete these first to prevent foreign key crash
-      SignalDatabase.rawDatabase.execSQL("DELETE FROM distribution_list")
-      SignalDatabase.rawDatabase.execSQL("DELETE FROM distribution_list_member")
+      SignalDatabase.rawDatabase.execSQL("DELETE FROM ${DistributionListTables.ListTable.TABLE_NAME}")
+      SignalDatabase.rawDatabase.execSQL("DELETE FROM ${DistributionListTables.MembershipTable.TABLE_NAME}")
 
       SqlUtil.getAllTables(SignalDatabase.rawDatabase)
         .filterNot { it.contains("sqlite") || it.contains("fts") || it.startsWith("emoji_search_") } // If we delete these we'll corrupt the DB
@@ -1093,8 +1113,8 @@ class RecipientTableTest_getAndPossiblyMerge {
           SignalDatabase.rawDatabase.execSQL("DELETE FROM $table")
         }
 
-      ApplicationDependencies.getRecipientCache().clear()
-      ApplicationDependencies.getRecipientCache().clearSelf()
+      AppDependencies.recipientCache.clear()
+      AppDependencies.recipientCache.clearSelf()
       RecipientId.clearCache()
     }
 

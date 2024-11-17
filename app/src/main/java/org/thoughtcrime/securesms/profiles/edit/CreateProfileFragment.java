@@ -41,7 +41,7 @@ import org.thoughtcrime.securesms.profiles.edit.pnp.WhoCanFindMeByPhoneNumberFra
 import org.thoughtcrime.securesms.profiles.manage.EditProfileNameFragment;
 import org.thoughtcrime.securesms.providers.BlobProvider;
 import org.thoughtcrime.securesms.util.CommunicationActions;
-import org.thoughtcrime.securesms.util.FeatureFlags;
+import org.thoughtcrime.securesms.util.RemoteConfig;
 import org.thoughtcrime.securesms.util.ViewUtil;
 import org.thoughtcrime.securesms.util.navigation.SafeNavigation;
 import org.thoughtcrime.securesms.util.text.AfterTextChanged;
@@ -166,7 +166,7 @@ public class CreateProfileFragment extends LoggingFragment {
     binding.mmsGroupHint.setVisibility(isEditingGroup && groupId.isMms() ? View.VISIBLE : View.GONE);
 
     if (isEditingGroup) {
-      EditTextUtil.addGraphemeClusterLimitFilter(binding.givenName, FeatureFlags.getMaxGroupNameGraphemeLength());
+      EditTextUtil.addGraphemeClusterLimitFilter(binding.givenName, RemoteConfig.getMaxGroupNameGraphemeLength());
       binding.profileDescriptionText.setVisibility(View.GONE);
       binding.whoCanFindMeContainer.setVisibility(View.GONE);
       binding.givenName.addTextChangedListener(new AfterTextChanged(s -> viewModel.setGivenName(s.toString())));
@@ -209,17 +209,15 @@ public class CreateProfileFragment extends LoggingFragment {
       binding.profileDescriptionText.setLinkColor(ContextCompat.getColor(requireContext(), R.color.signal_colorPrimary));
       binding.profileDescriptionText.setOnLinkClickListener(v -> CommunicationActions.openBrowserLink(requireContext(), getString(R.string.EditProfileFragment__support_link)));
 
-      if (FeatureFlags.phoneNumberPrivacy()) {
-        getParentFragmentManager().setFragmentResultListener(WhoCanFindMeByPhoneNumberFragment.REQUEST_KEY, getViewLifecycleOwner(), (requestKey, result) -> {
-          if (WhoCanFindMeByPhoneNumberFragment.REQUEST_KEY.equals(requestKey)) {
-            presentWhoCanFindMeDescription(SignalStore.phoneNumberPrivacy().getPhoneNumberDiscoverabilityMode());
-          }
-        });
+      getParentFragmentManager().setFragmentResultListener(WhoCanFindMeByPhoneNumberFragment.REQUEST_KEY, getViewLifecycleOwner(), (requestKey, result) -> {
+        if (WhoCanFindMeByPhoneNumberFragment.REQUEST_KEY.equals(requestKey)) {
+          presentWhoCanFindMeDescription(SignalStore.phoneNumberPrivacy().getPhoneNumberDiscoverabilityMode());
+        }
+      });
 
-        binding.whoCanFindMeContainer.setVisibility(View.VISIBLE);
-        binding.whoCanFindMeContainer.setOnClickListener(v -> SafeNavigation.safeNavigate(Navigation.findNavController(v), CreateProfileFragmentDirections.actionCreateProfileFragmentToPhoneNumberPrivacy()));
-        presentWhoCanFindMeDescription(SignalStore.phoneNumberPrivacy().getPhoneNumberDiscoverabilityMode());
-      }
+      binding.whoCanFindMeContainer.setVisibility(View.VISIBLE);
+      binding.whoCanFindMeContainer.setOnClickListener(v -> SafeNavigation.safeNavigate(Navigation.findNavController(v), CreateProfileFragmentDirections.actionCreateProfileFragmentToPhoneNumberPrivacy()));
+      presentWhoCanFindMeDescription(SignalStore.phoneNumberPrivacy().getPhoneNumberDiscoverabilityMode());
     }
 
     binding.finishButton.setOnClickListener(v -> {
@@ -288,6 +286,7 @@ public class CreateProfileFragment extends LoggingFragment {
   private void presentWhoCanFindMeDescription(PhoneNumberPrivacyValues.PhoneNumberDiscoverabilityMode phoneNumberListingMode) {
     switch (phoneNumberListingMode) {
       case DISCOVERABLE:
+      case UNDECIDED:
         binding.whoCanFindMeIcon.setImageResource(R.drawable.symbol_group_24);
         binding.whoCanFindMeDescription.setText(R.string.PhoneNumberPrivacy_everyone);
         break;

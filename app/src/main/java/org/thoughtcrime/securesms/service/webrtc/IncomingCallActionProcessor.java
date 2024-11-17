@@ -13,7 +13,7 @@ import org.signal.ringrtc.CallManager;
 import org.thoughtcrime.securesms.database.CallTable;
 import org.thoughtcrime.securesms.database.RecipientTable;
 import org.thoughtcrime.securesms.database.SignalDatabase;
-import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
+import org.thoughtcrime.securesms.dependencies.AppDependencies;
 import org.thoughtcrime.securesms.events.CallParticipant;
 import org.thoughtcrime.securesms.events.WebRtcViewModel;
 import org.thoughtcrime.securesms.keyvalue.SignalStore;
@@ -25,6 +25,7 @@ import org.thoughtcrime.securesms.ringrtc.RemotePeer;
 import org.thoughtcrime.securesms.service.webrtc.state.CallSetupState;
 import org.thoughtcrime.securesms.service.webrtc.state.VideoState;
 import org.thoughtcrime.securesms.service.webrtc.state.WebRtcServiceState;
+import org.thoughtcrime.securesms.util.AppForegroundObserver;
 import org.thoughtcrime.securesms.util.NetworkUtil;
 import org.thoughtcrime.securesms.util.Util;
 import org.thoughtcrime.securesms.webrtc.locks.LockManager;
@@ -102,6 +103,7 @@ public class IncomingCallActionProcessor extends DeviceAwareActionProcessor {
                                                 context,
                                                 videoState.getLockableEglBase().require(),
                                                 RingRtcDynamicConfiguration.getAudioProcessingMethod(),
+                                                RingRtcDynamicConfiguration.shouldUseOboeAdm(),
                                                 videoState.requireLocalSink(),
                                                 callParticipant.getVideoSink(),
                                                 videoState.requireCamera(),
@@ -190,7 +192,7 @@ public class IncomingCallActionProcessor extends DeviceAwareActionProcessor {
       boolean started = webRtcInteractor.startWebRtcCallActivityIfPossible();
       if (!started) {
         Log.i(TAG, "Unable to start call activity due to OS version or not being in the foreground");
-        ApplicationDependencies.getAppForegroundObserver().addListener(webRtcInteractor.getForegroundListener());
+        AppForegroundObserver.addListener(webRtcInteractor.getForegroundListener());
       }
     }
 

@@ -6,19 +6,29 @@
 package org.thoughtcrime.securesms.service.webrtc
 
 import android.app.Notification
+import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.pm.ServiceInfo
 import android.net.ConnectivityManager
+import android.os.Build
 import android.telephony.PhoneStateListener
 import android.telephony.TelephonyManager
 import androidx.annotation.MainThread
+import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.os.bundleOf
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.core.Single
+import io.reactivex.rxjava3.disposables.Disposable
+import io.reactivex.rxjava3.kotlin.subscribeBy
+import io.reactivex.rxjava3.schedulers.Schedulers
+import org.signal.core.util.PendingIntentFlags
 import org.signal.core.util.ThreadUtil
 import org.signal.core.util.logging.Log
-import org.thoughtcrime.securesms.dependencies.ApplicationDependencies
+import org.thoughtcrime.securesms.dependencies.AppDependencies
 import org.thoughtcrime.securesms.jobs.UnableToStartException
 import org.thoughtcrime.securesms.recipients.Recipient
 import org.thoughtcrime.securesms.recipients.RecipientId
@@ -30,12 +40,13 @@ import org.thoughtcrime.securesms.webrtc.audio.AudioManagerCommand
 import org.thoughtcrime.securesms.webrtc.audio.SignalAudioManager
 import org.thoughtcrime.securesms.webrtc.audio.SignalAudioManager.Companion.create
 import org.thoughtcrime.securesms.webrtc.locks.LockManager
+import java.util.concurrent.locks.ReentrantLock
+import kotlin.concurrent.withLock
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 
 /**
- * Entry point for [SignalCallManager] and friends to interact with the Android system as
- * previously done via [WebRtcCallService].
+ * Entry point for [SignalCallManager] and friends to interact with the Android system.
  *
  * This tries to limit the use of a foreground service until a call has been fully established
  * and the user has likely foregrounded us by accepting a call.
@@ -46,9 +57,84 @@ class ActiveCallManager(
 
   companion object {
     private val TAG = Log.tag(ActiveCallManager::class.java)
+
+    private val requiresAsyncNotificationLoad = Build.VERSION.SDK_INT <= 29
+
+    private var activeCallManager: ActiveCallManager? = null
+    private val activeCallManagerLock = ReentrantLock()
+
+    @JvmStatic
+    fun clearNotifications(context: Context) {
+      NotificationManagerCompat.from(context).apply {
+        cancel(CallNotificationBuilder.WEBRTC_NOTIFICATION)
+        cancel(CallNotificationBuilder.WEBRTC_NOTIFICATION_RINGING)
+      }
+    }
+
+    @JvmStatic
+    fun update(context: Context, type: Int, recipientId: RecipientId, isVideoCall: Boolean) {
+      activeCallManagerLock.withLock {
+        if (activeCallManager == null) {
+          activeCallManager = ActiveCallManager(context)
+        }
+        activeCallManager!!.update(type, recipientId, isVideoCall)
+      }
+    }
+
+    @JvmStatic
+    fun denyCall() {
+      AppDependencies.signalCallManager.denyCall()
+    }
+
+    @JvmStatic
+    fun hangup() {
+      AppDependencies.signalCallManager.localHangup()
+    }
+
+    @JvmStatic
+    fun stop() {
+      activeCallManagerLock.withLock {
+        activeCallManager?.shutdown()
+        activeCallManager = null
+      }
+    }
+
+    @JvmStatic
+    fun denyCallIntent(context: Context): PendingIntent {
+      val intent = Intent(context, ActiveCallServiceReceiver::class.java)
+      intent.setAction(ActiveCallServiceReceiver.ACTION_DENY)
+      return PendingIntent.getBroadcast(context, 0, intent, PendingIntentFlags.mutable())
+    }
+
+    @JvmStatic
+    fun hangupIntent(context: Context): PendingIntent {
+      val intent = Intent(context, ActiveCallServiceReceiver::class.java)
+      intent.setAction(ActiveCallServiceReceiver.ACTION_HANGUP)
+      return PendingIntent.getBroadcast(context, 0, intent, PendingIntentFlags.mutable())
+    }
+
+    @JvmStatic
+    fun sendAudioManagerCommand(context: Context, command: AudioManagerCommand) {
+      activeCallManagerLock.withLock {
+        if (activeCallManager == null) {
+          activeCallManager = ActiveCallManager(context)
+        }
+        activeCallManager!!.sendAudioCommand(command)
+      }
+    }
+
+    @JvmStatic
+    fun changePowerButtonReceiver(context: Context, register: Boolean) {
+      activeCallManagerLock.withLock {
+        if (activeCallManager == null) {
+          activeCallManager = ActiveCallManager(context)
+        }
+        activeCallManager!!.changePowerButton(register)
+      }
+    }
   }
 
-  private val callManager = ApplicationDependencies.getSignalCallManager()
+  private val callManager = AppDependencies.signalCallManager
 
   private var networkReceiver: NetworkReceiver? = null
   private var powerButtonReceiver: PowerButtonReceiver? = null
@@ -56,6 +142,7 @@ class ActiveCallManager(
   private val webSocketKeepAliveTask: WebSocketKeepAliveTask = WebSocketKeepAliveTask()
   private var signalAudioManager: SignalAudioManager? = null
   private var previousNotificationId = -1
+  private var previousNotificationDisposable = Disposable.disposed()
 
   init {
     registerUncaughtExceptionHandler()
@@ -64,8 +151,10 @@ class ActiveCallManager(
     webSocketKeepAliveTask.start()
   }
 
-  fun stop() {
-    Log.v(TAG, "stop")
+  fun shutdown() {
+    Log.v(TAG, "shutdown")
+
+    previousNotificationDisposable.dispose()
 
     uncaughtExceptionHandlerManager?.unregister()
     uncaughtExceptionHandlerManager = null
@@ -85,6 +174,7 @@ class ActiveCallManager(
 
   fun update(type: Int, recipientId: RecipientId, isVideoCall: Boolean) {
     Log.i(TAG, "update $type $recipientId $isVideoCall")
+    previousNotificationDisposable.dispose()
 
     val notificationId = CallNotificationBuilder.getNotificationId(type)
 
@@ -94,11 +184,22 @@ class ActiveCallManager(
 
     previousNotificationId = notificationId
 
-    if (type != CallNotificationBuilder.TYPE_ESTABLISHED) {
-      val notification = CallNotificationBuilder.getCallInProgressNotification(application, type, Recipient.resolved(recipientId), isVideoCall, false)
+    if (type == CallNotificationBuilder.TYPE_INCOMING_RINGING || type == CallNotificationBuilder.TYPE_INCOMING_CONNECTING) {
+      val notification = CallNotificationBuilder.getCallInProgressNotification(application, type, Recipient.resolved(recipientId), isVideoCall, requiresAsyncNotificationLoad)
       NotificationManagerCompat.from(application).notify(notificationId, notification)
+
+      if (requiresAsyncNotificationLoad) {
+        previousNotificationDisposable = Single.fromCallable { CallNotificationBuilder.getCallInProgressNotification(application, type, Recipient.resolved(recipientId), isVideoCall, false) }
+          .subscribeOn(Schedulers.io())
+          .observeOn(AndroidSchedulers.mainThread())
+          .subscribeBy { asyncNotification ->
+            if (NotificationManagerCompat.from(application).activeNotifications.any { n -> n.id == notificationId }) {
+              NotificationManagerCompat.from(application).notify(notificationId, asyncNotification)
+            }
+          }
+      }
     } else {
-      ActiveCallForegroundService.start(application, recipientId, isVideoCall)
+      ActiveCallForegroundService.update(application, type, recipientId, isVideoCall)
     }
   }
 
@@ -165,15 +266,19 @@ class ActiveCallManager(
     companion object {
       private const val EXTRA_RECIPIENT_ID = "RECIPIENT_ID"
       private const val EXTRA_IS_VIDEO_CALL = "IS_VIDEO_CALL"
+      private const val EXTRA_TYPE = "TYPE"
 
-      fun start(context: Context, recipientId: RecipientId, isVideoCall: Boolean) {
+      fun update(context: Context, @CallNotificationBuilder.CallNotificationType type: Int, recipientId: RecipientId, isVideoCall: Boolean) {
         val extras = bundleOf(
+          EXTRA_TYPE to type,
           EXTRA_RECIPIENT_ID to recipientId,
           EXTRA_IS_VIDEO_CALL to isVideoCall
         )
 
-        if (!SafeForegroundService.start(context, ActiveCallForegroundService::class.java, extras)) {
-          throw UnableToStartException(Exception())
+        if (!SafeForegroundService.update(context, ActiveCallForegroundService::class.java, extras)) {
+          if (!SafeForegroundService.start(context, ActiveCallForegroundService::class.java, extras)) {
+            throw UnableToStartException(Exception())
+          }
         }
       }
 
@@ -188,8 +293,21 @@ class ActiveCallManager(
     override val notificationId: Int
       get() = CallNotificationBuilder.WEBRTC_NOTIFICATION
 
+    @get:RequiresApi(30)
+    override val serviceType: Int
+      get() = ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC or ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE
+
     private var hangUpRtcOnDeviceCallAnswered: PhoneStateListener? = null
-    private var notification: Notification? = null
+    private var notificationDisposable: Disposable = Disposable.disposed()
+
+    @Volatile
+    private var asyncServiceNotification: Notification? = null
+
+    @Volatile
+    private var lastAsyncServiceNotificationRequestTime: Long = 0
+
+    @Volatile
+    private var lastAsyncServiceNotificationType: Int = -1
 
     override fun onCreate() {
       super.onCreate()
@@ -204,6 +322,10 @@ class ActiveCallManager(
       }
     }
 
+    override fun onServiceStopCommandReceived(intent: Intent) {
+      notificationDisposable.dispose()
+    }
+
     override fun onDestroy() {
       super.onDestroy()
 
@@ -213,24 +335,51 @@ class ActiveCallManager(
     }
 
     override fun getForegroundNotification(intent: Intent): Notification {
-      if (notification != null) {
-        return notification!!
-      } else if (!intent.hasExtra(EXTRA_RECIPIENT_ID)) {
+      notificationDisposable.dispose()
+
+      if (SafeForegroundService.isStopping(intent)) {
+        Log.v(TAG, "Service is stopping, using generic stopping notification")
         return CallNotificationBuilder.getStoppingNotification(this)
       }
 
-      val recipientId: RecipientId = intent.getParcelableExtra(EXTRA_RECIPIENT_ID)!!
+      if (!intent.hasExtra(EXTRA_RECIPIENT_ID) || !intent.hasExtra(EXTRA_TYPE)) {
+        Log.w(TAG, "Missing required data, service is stopping, using generic stopping notification")
+        return CallNotificationBuilder.getStoppingNotification(this)
+      }
+
+      val type = intent.getIntExtra(EXTRA_TYPE, 0)
+      val recipient: Recipient = Recipient.resolved(intent.getParcelableExtra(EXTRA_RECIPIENT_ID)!!)
       val isVideoCall = intent.getBooleanExtra(EXTRA_IS_VIDEO_CALL, false)
 
-      notification = CallNotificationBuilder.getCallInProgressNotification(
-        this,
-        CallNotificationBuilder.TYPE_ESTABLISHED,
-        Recipient.resolved(recipientId),
-        isVideoCall,
-        false
-      )
+      if (requiresAsyncNotificationLoad) {
+        if (asyncServiceNotification != null && lastAsyncServiceNotificationType == type) {
+          return asyncServiceNotification!!
+        }
 
-      return notification!!
+        val requestTime = System.currentTimeMillis()
+        lastAsyncServiceNotificationRequestTime = requestTime
+        notificationDisposable = Single.fromCallable { createNotification(type, recipient, isVideoCall, skipAvatarLoad = false) }
+          .subscribeOn(Schedulers.io())
+          .filter { requestTime == lastAsyncServiceNotificationRequestTime }
+          .observeOn(AndroidSchedulers.mainThread())
+          .subscribeBy { notification ->
+            lastAsyncServiceNotificationType = type
+            asyncServiceNotification = notification
+            update(this, type, recipient.id, isVideoCall)
+          }
+      }
+
+      return createNotification(type, recipient, isVideoCall, skipAvatarLoad = requiresAsyncNotificationLoad)
+    }
+
+    private fun createNotification(type: Int, recipient: Recipient, isVideoCall: Boolean, skipAvatarLoad: Boolean): Notification {
+      return CallNotificationBuilder.getCallInProgressNotification(
+        this,
+        type,
+        recipient,
+        isVideoCall,
+        skipAvatarLoad
+      )
     }
 
     @Suppress("deprecation")
@@ -244,7 +393,7 @@ class ActiveCallManager(
       }
 
       private fun hangup() {
-        ApplicationDependencies.getSignalCallManager().localHangup()
+        AppDependencies.signalCallManager.localHangup()
       }
     }
   }
@@ -259,8 +408,8 @@ class ActiveCallManager(
     override fun onReceive(context: Context?, intent: Intent?) {
       Log.d(TAG, "action: ${intent?.action}")
       when (intent?.action) {
-        ACTION_DENY -> ApplicationDependencies.getSignalCallManager().denyCall()
-        ACTION_HANGUP -> ApplicationDependencies.getSignalCallManager().localHangup()
+        ACTION_DENY -> AppDependencies.signalCallManager.denyCall()
+        ACTION_HANGUP -> AppDependencies.signalCallManager.localHangup()
       }
     }
   }
@@ -289,13 +438,13 @@ class ActiveCallManager(
     fun stop() {
       keepRunning = false
       ThreadUtil.cancelRunnableOnMain(this)
-      ApplicationDependencies.getIncomingMessageObserver().removeKeepAliveToken(WEBSOCKET_KEEP_ALIVE_TOKEN)
+      AppDependencies.incomingMessageObserver.removeKeepAliveToken(WEBSOCKET_KEEP_ALIVE_TOKEN)
     }
 
     @MainThread
     override fun run() {
       if (keepRunning) {
-        ApplicationDependencies.getIncomingMessageObserver().registerKeepAliveToken(WEBSOCKET_KEEP_ALIVE_TOKEN)
+        AppDependencies.incomingMessageObserver.registerKeepAliveToken(WEBSOCKET_KEEP_ALIVE_TOKEN)
         ThreadUtil.runOnMainDelayed(this, REQUEST_WEBSOCKET_STAY_OPEN_DELAY.inWholeMilliseconds)
       }
     }
@@ -306,7 +455,7 @@ class ActiveCallManager(
       val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
       val activeNetworkInfo = connectivityManager.activeNetworkInfo
 
-      ApplicationDependencies.getSignalCallManager().apply {
+      AppDependencies.signalCallManager.apply {
         networkChange(activeNetworkInfo != null && activeNetworkInfo.isConnected)
         dataModeUpdate()
       }
@@ -316,7 +465,7 @@ class ActiveCallManager(
   private class PowerButtonReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
       if (Intent.ACTION_SCREEN_OFF == intent.action) {
-        ApplicationDependencies.getSignalCallManager().screenOff()
+        AppDependencies.signalCallManager.screenOff()
       }
     }
   }

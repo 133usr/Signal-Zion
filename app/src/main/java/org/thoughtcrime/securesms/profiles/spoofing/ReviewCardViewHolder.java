@@ -83,13 +83,6 @@ class ReviewCardViewHolder extends RecyclerView.ViewHolder {
 
     binding.cardName.setText(name);
 
-    int titleTextResId = getTitleResId(reviewCard.getCardType());
-    if (titleTextResId > 0) {
-      binding.cardTitle.setText(getTitleResId(reviewCard.getCardType()));
-    } else {
-      binding.cardTitle.setVisibility(View.GONE);
-    }
-
     List<ReviewTextRow> rows = switch (reviewCard.getCardType()) {
       case MEMBER, REQUEST -> getNonContactSublines(reviewCard);
       case YOUR_CONTACT -> getContactSublines(reviewCard);
@@ -131,7 +124,7 @@ class ReviewCardViewHolder extends RecyclerView.ViewHolder {
       reviewTextRows.add(ReviewTextRow.SYSTEM_CONTACTS);
     }
 
-    if (reviewCard.getReviewRecipient().hasE164() && reviewCard.getReviewRecipient().shouldShowE164()) {
+    if (reviewCard.getReviewRecipient().getHasE164() && reviewCard.getReviewRecipient().getShouldShowE164()) {
       reviewTextRows.add(ReviewTextRow.PHONE_NUMBER);
     }
 
@@ -251,14 +244,6 @@ class ReviewCardViewHolder extends RecyclerView.ViewHolder {
     void onSecondaryActionItemClicked(int position);
 
     void onSignalConnectionClicked();
-  }
-
-  private static @StringRes int getTitleResId(@NonNull ReviewCard.CardType cardType) {
-    return switch (cardType) {
-      case MEMBER -> -1;
-      case REQUEST -> R.string.ReviewCard__request;
-      case YOUR_CONTACT -> R.string.ReviewCard__your_contact;
-    };
   }
 
   private static @StringRes int getActionLabelResId(@NonNull ReviewCard.Action action) {

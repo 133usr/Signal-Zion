@@ -3,12 +3,14 @@ package org.thoughtcrime.securesms.contacts.paged
 import android.database.Cursor
 import org.signal.core.util.requireLong
 import org.signal.paging.PagedDataSource
+import org.thoughtcrime.securesms.R
 import org.thoughtcrime.securesms.contacts.ContactRepository
 import org.thoughtcrime.securesms.contacts.paged.collections.ContactSearchCollection
 import org.thoughtcrime.securesms.contacts.paged.collections.ContactSearchIterator
 import org.thoughtcrime.securesms.contacts.paged.collections.CursorSearchIterator
 import org.thoughtcrime.securesms.contacts.paged.collections.StoriesSearchCollection
 import org.thoughtcrime.securesms.database.GroupTable
+import org.thoughtcrime.securesms.database.RecipientTable
 import org.thoughtcrime.securesms.database.model.DistributionListPrivacyMode
 import org.thoughtcrime.securesms.database.model.GroupRecord
 import org.thoughtcrime.securesms.database.model.ThreadRecord
@@ -20,7 +22,6 @@ import org.thoughtcrime.securesms.search.MessageResult
 import org.thoughtcrime.securesms.search.MessageSearchResult
 import org.thoughtcrime.securesms.search.SearchRepository
 import org.thoughtcrime.securesms.search.ThreadSearchResult
-import org.thoughtcrime.securesms.util.FeatureFlags
 import org.thoughtcrime.securesms.util.UsernameUtil
 import java.util.concurrent.TimeUnit
 
@@ -142,6 +143,7 @@ class ContactSearchPagedDataSource(
       is ContactSearchConfiguration.Section.PhoneNumber -> if (isPossiblyPhoneNumber(query)) 1 else 0
       is ContactSearchConfiguration.Section.Username -> if (isPossiblyUsername(query)) 1 else 0
       is ContactSearchConfiguration.Section.Empty -> 1
+      is ContactSearchConfiguration.Section.ChatTypes -> getChatTypesData(section).size
     }
   }
 
@@ -181,6 +183,7 @@ class ContactSearchPagedDataSource(
       is ContactSearchConfiguration.Section.PhoneNumber -> getPossiblePhoneNumber(section, query)
       is ContactSearchConfiguration.Section.Username -> getPossibleUsername(section, query)
       is ContactSearchConfiguration.Section.Empty -> listOf(ContactSearchData.Empty(query))
+      is ContactSearchConfiguration.Section.ChatTypes -> getChatTypesData(section)
     }
   }
 
@@ -189,14 +192,10 @@ class ContactSearchPagedDataSource(
       return false
     }
 
-    return if (FeatureFlags.usernames()) {
-      NumberUtil.isVisuallyValidNumberOrEmail(query)
-    } else {
-      NumberUtil.isValidSmsOrEmail(query)
-    }
+    return NumberUtil.isVisuallyValidNumberOrEmail(query)
   }
   private fun isPossiblyUsername(query: String?): Boolean {
-    return query != null && FeatureFlags.usernames() && UsernameUtil.isValidUsernameForSearch(query)
+    return query != null && UsernameUtil.isValidUsernameForSearch(query)
   }
   private fun getPossiblePhoneNumber(section: ContactSearchConfiguration.Section.PhoneNumber, query: String?): List<ContactSearchData> {
     return if (isPossiblyPhoneNumber(query)) {
@@ -214,11 +213,8 @@ class ContactSearchPagedDataSource(
   }
 
   private fun getNonGroupSearchIterator(section: ContactSearchConfiguration.Section.Individuals, query: String?): ContactSearchIterator<Cursor> {
-    return when (section.transportType) {
-      ContactSearchConfiguration.TransportType.PUSH -> CursorSearchIterator(wrapRecipientCursor(contactSearchPagedDataSourceRepository.querySignalContacts(query, section.includeSelf)))
-      ContactSearchConfiguration.TransportType.SMS -> CursorSearchIterator(wrapRecipientCursor(contactSearchPagedDataSourceRepository.queryNonSignalContacts(query)))
-      ContactSearchConfiguration.TransportType.ALL -> CursorSearchIterator(wrapRecipientCursor(contactSearchPagedDataSourceRepository.queryNonGroupContacts(query, section.includeSelf)))
-    }
+    val searchQuery = RecipientTable.ContactSearchQuery(query ?: "", section.includeSelf, section.pushSearchResultsSortOrder)
+    return CursorSearchIterator(wrapRecipientCursor(contactSearchPagedDataSourceRepository.querySignalContacts(searchQuery)))
   }
 
   private fun wrapRecipientCursor(cursor: Cursor?): Cursor? {
@@ -353,6 +349,21 @@ class ContactSearchPagedDataSource(
         }
       )
     }
+  }
+
+  private fun getChatTypesData(section: ContactSearchConfiguration.Section.ChatTypes): List<ContactSearchData> {
+    val data = mutableListOf<ContactSearchData>()
+
+    if (section.includeHeader) {
+      data.add(ContactSearchData.Header(section.sectionKey, section.headerAction))
+    }
+    data.addAll(
+      listOf(
+        ContactSearchData.ChatTypeRow(R.drawable.symbol_person_light_24, ChatType.INDIVIDUAL),
+        ContactSearchData.ChatTypeRow(R.drawable.symbol_group_light_20, ChatType.GROUPS)
+      )
+    )
+    return data
   }
 
   private fun getContactsWithoutThreadsContactData(section: ContactSearchConfiguration.Section.ContactsWithoutThreads, query: String?, startIndex: Int, endIndex: Int): List<ContactSearchData> {

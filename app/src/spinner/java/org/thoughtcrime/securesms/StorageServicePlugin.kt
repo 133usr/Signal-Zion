@@ -1,8 +1,9 @@
 package org.thoughtcrime.securesms
 
+import org.signal.core.util.Base64
 import org.signal.spinner.Plugin
 import org.signal.spinner.PluginResult
-import org.thoughtcrime.securesms.dependencies.ApplicationDependencies
+import org.thoughtcrime.securesms.dependencies.AppDependencies
 import org.thoughtcrime.securesms.keyvalue.SignalStore
 
 class StorageServicePlugin : Plugin {
@@ -10,11 +11,11 @@ class StorageServicePlugin : Plugin {
   override val path: String = PATH
 
   override fun get(): PluginResult {
-    val columns = listOf("Type", "Data")
+    val columns = listOf("Type", "Id", "Data")
     val rows = mutableListOf<List<String>>()
 
-    val manager = ApplicationDependencies.getSignalServiceAccountManager()
-    val storageServiceKey = SignalStore.storageService().orCreateStorageKey
+    val manager = AppDependencies.signalServiceAccountManager
+    val storageServiceKey = SignalStore.storageService.storageKey
     val storageManifestVersion = manager.storageManifestVersion
     val manifest = manager.getStorageManifestIfDifferentVersion(storageServiceKey, storageManifestVersion - 1).get()
     val signalStorageRecords = manager.readStorageRecords(storageServiceKey, manifest.storageIds)
@@ -22,25 +23,31 @@ class StorageServicePlugin : Plugin {
     for (record in signalStorageRecords) {
       val row = mutableListOf<String>()
 
-      if (record.account.isPresent) {
+      if (record.proto.account != null) {
         row += "Account"
-        row += record.account.get().toProto().toString()
-      } else if (record.contact.isPresent) {
+        row += record.proto.account.toString()
+      } else if (record.proto.contact != null) {
         row += "Contact"
-        row += record.contact.get().toProto().toString()
-      } else if (record.groupV1.isPresent) {
+        row += record.proto.toString()
+      } else if (record.proto.groupV1 != null) {
         row += "GV1"
-        row += record.groupV1.get().toProto().toString()
-      } else if (record.groupV2.isPresent) {
+        row += record.proto.toString()
+      } else if (record.proto.groupV2 != null) {
         row += "GV2"
-        row += record.groupV2.get().toProto().toString()
-      } else if (record.storyDistributionList.isPresent) {
+        row += record.proto.toString()
+      } else if (record.proto.storyDistributionList != null) {
         row += "Distribution List"
-        row += record.storyDistributionList.get().toProto().toString()
+        row += record.proto.toString()
+      } else if (record.proto.callLink != null) {
+        row += "Call Link"
+        row += record.proto.callLink.toString()
       } else {
         row += "Unknown"
         row += ""
       }
+
+      row.add(1, Base64.encodeWithPadding(record.id.raw))
+
       rows += row
     }
 

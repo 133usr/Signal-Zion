@@ -33,6 +33,7 @@ import org.signal.core.ui.Scaffolds
 import org.thoughtcrime.securesms.R
 import org.thoughtcrime.securesms.compose.ComposeDialogFragment
 import org.thoughtcrime.securesms.profiles.manage.EditProfileActivity
+import org.signal.core.ui.R as CoreUiR
 
 /**
  * Displays an explanation page about usernames and gives the user
@@ -80,17 +81,19 @@ private fun NewWaysToConnectDialogContent(
     navigationIconPainter = painterResource(id = R.drawable.symbol_x_24)
   ) {
     Column(modifier = Modifier.padding(it)) {
-      Text(
-        text = stringResource(id = R.string.NewWaysToConnectDialogFragment__new_ways_to_connect),
-        style = MaterialTheme.typography.headlineMedium,
-        textAlign = TextAlign.Center,
-        modifier = Modifier
-          .fillMaxWidth()
-          .padding(horizontal = dimensionResource(id = R.dimen.core_ui__gutter))
-          .padding(top = 16.dp, bottom = 36.dp)
-      )
-
       LazyColumn(modifier = Modifier.weight(1f)) {
+        item {
+          Text(
+            text = stringResource(id = R.string.NewWaysToConnectDialogFragment__new_ways_to_connect),
+            style = MaterialTheme.typography.headlineMedium,
+            textAlign = TextAlign.Center,
+            modifier = Modifier
+              .fillMaxWidth()
+              .padding(horizontal = dimensionResource(id = CoreUiR.dimen.gutter))
+              .padding(top = 4.dp, bottom = 36.dp)
+          )
+        }
+
         item {
           NewWaysToConnectRowItem(
             title = stringResource(id = R.string.NewWaysToConnectDialogFragment__phone_number_privacy),
@@ -119,8 +122,8 @@ private fun NewWaysToConnectDialogContent(
       Buttons.LargeTonal(
         onClick = onSetUpUsernameClick,
         modifier = Modifier
-          .padding(horizontal = dimensionResource(id = R.dimen.core_ui__gutter))
-          .padding(top = 36.dp)
+          .padding(horizontal = dimensionResource(id = CoreUiR.dimen.gutter))
+          .padding(top = 16.dp)
           .defaultMinSize(minWidth = 221.dp)
           .align(alignment = Alignment.CenterHorizontally)
       ) {
@@ -133,8 +136,10 @@ private fun NewWaysToConnectDialogContent(
         onClick = onNotNowClick,
         modifier = Modifier
           .padding(
-            horizontal = dimensionResource(id = R.dimen.core_ui__gutter),
-            vertical = 36.dp
+            start = dimensionResource(id = CoreUiR.dimen.gutter),
+            end = dimensionResource(id = CoreUiR.dimen.gutter),
+            top = 8.dp,
+            bottom = 16.dp
           )
           .defaultMinSize(minWidth = 221.dp)
           .align(alignment = Alignment.CenterHorizontally)
@@ -167,7 +172,7 @@ private fun NewWaysToConnectRowItem(
   Row(
     modifier = modifier
       .padding(
-        horizontal = dimensionResource(id = R.dimen.core_ui__gutter)
+        horizontal = dimensionResource(id = CoreUiR.dimen.gutter)
       )
       .padding(
         bottom = 40.dp
