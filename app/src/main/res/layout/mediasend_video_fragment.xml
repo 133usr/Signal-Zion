@@ -5,12 +5,12 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <seraph.zion.signal.video.VideoPlayer
+    <org.thoughtcrime.securesms.video.VideoPlayer
         android:id="@+id/video_player"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <seraph.zion.signal.scribbles.VideoEditorHud
+    <org.thoughtcrime.securesms.scribbles.VideoEditorHud
         android:id="@+id/video_editor_hud"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

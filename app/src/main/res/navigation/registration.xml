@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/welcomeFragment"
-        android:name="seraph.zion.signal.registration.fragments.WelcomeFragment"
+        android:name="org.thoughtcrime.securesms.registration.fragments.WelcomeFragment"
         android:label="fragment_welcome"
         tools:layout="@layout/fragment_registration_welcome">
 
@@ -55,7 +55,7 @@
 
     <fragment
         android:id="@+id/grantPermissionsFragment"
-        android:name="seraph.zion.signal.registration.fragments.GrantPermissionsFragment"
+        android:name="org.thoughtcrime.securesms.registration.fragments.GrantPermissionsFragment"
         android:label="fragment_grant_permissions">
 
         <action
@@ -84,13 +84,13 @@
 
         <argument
             android:name="welcomeAction"
-            app:argType="seraph.zion.signal.registration.fragments.GrantPermissionsFragment$WelcomeAction" />
+            app:argType="org.thoughtcrime.securesms.registration.fragments.GrantPermissionsFragment$WelcomeAction" />
 
     </fragment>
 
     <fragment
         android:id="@+id/chooseBackupFragment"
-        android:name="seraph.zion.signal.registration.fragments.ChooseBackupFragment"
+        android:name="org.thoughtcrime.securesms.registration.fragments.ChooseBackupFragment"
         android:label="fragment_choose_backup"
         tools:layout="@layout/fragment_registration_choose_backup">
 
@@ -116,7 +116,7 @@
 
     <fragment
         android:id="@+id/enterPhoneNumberFragment"
-        android:name="seraph.zion.signal.registration.fragments.EnterPhoneNumberFragment"
+        android:name="org.thoughtcrime.securesms.registration.fragments.EnterPhoneNumberFragment"
         android:label="fragment_enter_phone_number"
         tools:layout="@layout/fragment_registration_enter_phone_number">
 
@@ -167,13 +167,13 @@
 
     <fragment
         android:id="@+id/countryPickerFragment"
-        android:name="seraph.zion.signal.registration.fragments.CountryPickerFragment"
+        android:name="org.thoughtcrime.securesms.registration.fragments.CountryPickerFragment"
         android:label="fragment_country_picker"
         tools:layout="@layout/fragment_registration_country_picker" />
 
     <fragment
         android:id="@+id/enterCodeFragment"
-        android:name="seraph.zion.signal.registration.fragments.EnterSmsCodeFragment"
+        android:name="org.thoughtcrime.securesms.registration.fragments.EnterSmsCodeFragment"
         android:label="fragment_enter_code"
         tools:layout="@layout/fragment_registration_enter_code">
 
@@ -214,7 +214,7 @@
 
     <fragment
         android:id="@+id/registrationLockFragment"
-        android:name="seraph.zion.signal.registration.fragments.RegistrationLockFragment"
+        android:name="org.thoughtcrime.securesms.registration.fragments.RegistrationLockFragment"
         android:label="fragment_kbs_lock"
         tools:layout="@layout/fragment_registration_lock">
 
@@ -246,7 +246,7 @@
 
     <fragment
         android:id="@+id/reRegisterWithPinFragment"
-        android:name="seraph.zion.signal.registration.fragments.ReRegisterWithPinFragment"
+        android:name="org.thoughtcrime.securesms.registration.fragments.ReRegisterWithPinFragment"
         tools:layout="@layout/fragment_registration_lock">
 
         <action
@@ -273,19 +273,19 @@
 
     <fragment
         android:id="@+id/accountLockedFragment"
-        android:name="seraph.zion.signal.registration.fragments.AccountLockedFragment"
+        android:name="org.thoughtcrime.securesms.registration.fragments.AccountLockedFragment"
         android:label="fragment_account_locked"
         tools:layout="@layout/account_locked_fragment" />
 
     <fragment
         android:id="@+id/captchaFragment"
-        android:name="seraph.zion.signal.registration.fragments.CaptchaFragment"
+        android:name="org.thoughtcrime.securesms.registration.fragments.CaptchaFragment"
         android:label="fragment_captcha"
         tools:layout="@layout/fragment_registration_captcha" />
 
     <fragment
         android:id="@+id/restoreBackupFragment"
-        android:name="seraph.zion.signal.registration.fragments.RestoreBackupFragment"
+        android:name="org.thoughtcrime.securesms.registration.fragments.RestoreBackupFragment"
         android:label="fragment_restore_backup"
         tools:layout="@layout/fragment_registration_restore_backup">
 
@@ -337,19 +337,19 @@
 
     <fragment
         android:id="@+id/registrationCompletePlaceHolderFragment"
-        android:name="seraph.zion.signal.registration.fragments.RegistrationCompleteFragment"
+        android:name="org.thoughtcrime.securesms.registration.fragments.RegistrationCompleteFragment"
         android:label="fragment_registration_complete_place_holder"
         tools:layout="@layout/fragment_registration_blank" />
 
     <fragment
         android:id="@+id/registrationProxyFragment"
-        android:name="seraph.zion.signal.preferences.EditProxyFragment"
+        android:name="org.thoughtcrime.securesms.preferences.EditProxyFragment"
         android:label="fragment_registration_edit_proxy"
         tools:layout="@layout/edit_proxy_fragment" />
 
     <fragment
         android:id="@+id/transferOrRestore"
-        android:name="seraph.zion.signal.devicetransfer.newdevice.TransferOrRestoreFragment"
+        android:name="org.thoughtcrime.securesms.devicetransfer.newdevice.TransferOrRestoreFragment"
         tools:layout="@layout/fragment_transfer_restore">
 
         <action
@@ -372,7 +372,7 @@
 
     <fragment
         android:id="@+id/newDeviceTransferInstructions"
-        android:name="seraph.zion.signal.devicetransfer.newdevice.NewDeviceTransferInstructionsFragment"
+        android:name="org.thoughtcrime.securesms.devicetransfer.newdevice.NewDeviceTransferInstructionsFragment"
         tools:layout="@layout/new_device_transfer_instructions_fragment">
 
         <action
@@ -387,7 +387,7 @@
 
     <fragment
         android:id="@+id/deviceTransferSetup"
-        android:name="seraph.zion.signal.devicetransfer.newdevice.NewDeviceTransferSetupFragment"
+        android:name="org.thoughtcrime.securesms.devicetransfer.newdevice.NewDeviceTransferSetupFragment"
         tools:layout="@layout/device_transfer_setup_fragment">
 
         <action
@@ -412,7 +412,7 @@
 
     <fragment
         android:id="@+id/newDeviceTransfer"
-        android:name="seraph.zion.signal.devicetransfer.newdevice.NewDeviceTransferFragment"
+        android:name="org.thoughtcrime.securesms.devicetransfer.newdevice.NewDeviceTransferFragment"
         tools:layout="@layout/device_transfer_fragment">
 
         <action
@@ -438,7 +438,7 @@
 
     <fragment
         android:id="@+id/newDeviceTransferComplete"
-        android:name="seraph.zion.signal.devicetransfer.newdevice.NewDeviceTransferCompleteFragment"
+        android:name="org.thoughtcrime.securesms.devicetransfer.newdevice.NewDeviceTransferCompleteFragment"
         tools:layout="@layout/new_device_transfer_complete_fragment">
 
         <action

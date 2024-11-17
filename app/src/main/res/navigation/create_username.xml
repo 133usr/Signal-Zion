@@ -7,13 +7,13 @@
 
     <fragment
         android:id="@+id/createUsernameFragment"
-        android:name="seraph.zion.signal.profiles.manage.UsernameEditFragment"
+        android:name="org.thoughtcrime.securesms.profiles.manage.UsernameEditFragment"
         tools:layout="@layout/username_edit_fragment">
 
         <argument
             android:name="mode"
             android:defaultValue="NORMAL"
-            app:argType="seraph.zion.signal.profiles.manage.UsernameEditMode" />
+            app:argType="org.thoughtcrime.securesms.profiles.manage.UsernameEditMode" />
 
     </fragment>
 

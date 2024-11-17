@@ -44,7 +44,7 @@
             android:layout_height="wrap_content"
             app:elevation="0dp"
             app:expanded="false"
-            app:layout_behavior="seraph.zion.signal.conversationlist.ConversationFilterBehavior">
+            app:layout_behavior="org.thoughtcrime.securesms.conversationlist.ConversationFilterBehavior">
 
             <com.google.android.material.appbar.CollapsingToolbarLayout
                 android:id="@+id/collapsing_toolbar"
@@ -52,7 +52,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
-                <seraph.zion.signal.conversationlist.chatfilter.ConversationListFilterPullView
+                <org.thoughtcrime.securesms.conversationlist.chatfilter.ConversationListFilterPullView
                     android:id="@+id/pull_view"
                     android:layout_width="match_parent"
                     android:layout_height="130dp"
@@ -97,9 +97,9 @@
             android:clipToPadding="false"
             android:gravity="end"
             android:orientation="vertical"
-            app:layout_behavior="seraph.zion.signal.util.views.SlideUpWithSnackbarBehavior">
+            app:layout_behavior="org.thoughtcrime.securesms.util.views.SlideUpWithSnackbarBehavior">
 
-            <seraph.zion.signal.components.registration.PulsingFloatingActionButton
+            <org.thoughtcrime.securesms.components.registration.PulsingFloatingActionButton
                 android:id="@+id/camera_fab"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -117,7 +117,7 @@
                 app:shapeAppearanceOverlay="@style/Signal.ShapeOverlay.Rounded.Fab"
                 tools:visibility="visible" />
 
-            <seraph.zion.signal.components.registration.PulsingFloatingActionButton
+            <org.thoughtcrime.securesms.components.registration.PulsingFloatingActionButton
                 android:id="@+id/fab"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -145,7 +145,7 @@
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
-    <seraph.zion.signal.components.menu.SignalBottomActionBar
+    <org.thoughtcrime.securesms.components.menu.SignalBottomActionBar
         android:id="@+id/conversation_list_bottom_action_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

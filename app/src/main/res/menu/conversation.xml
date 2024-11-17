@@ -14,7 +14,7 @@
     <item
         android:id="@+id/menu_search"
         android:title="@string/SearchToolbar_search"
-        app:actionViewClass="seraph.zion.signal.components.SearchView"
+        app:actionViewClass="org.thoughtcrime.securesms.components.SearchView"
         app:showAsAction="collapseActionView" />
 
     <item

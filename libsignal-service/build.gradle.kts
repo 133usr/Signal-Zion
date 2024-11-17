@@ -104,11 +104,6 @@ tasks.named("sourcesJar") {
   dependsOn(":libsignal-service:generateMainProtos")
 }
 
-tasks.named("sourcesJar", Jar::class) {
-  // Other configurations for the sourcesJar task
-  duplicatesStrategy = DuplicatesStrategy.EXCLUDE // or any other strategy you prefer
-  from(sourceSets.main.get().allSource)
-}
 
 
 

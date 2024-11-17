@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<seraph.zion.signal.components.InputPanel xmlns:android="http://schemas.android.com/apk/res/android"
+<org.thoughtcrime.securesms.components.InputPanel xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/bottom_panel"
@@ -87,7 +87,7 @@
         tools:src="@tools:sample/avatars"
         tools:visibility="visible" />
 
-    <seraph.zion.signal.components.QuoteView
+    <org.thoughtcrime.securesms.components.QuoteView
         android:id="@+id/quote_view"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -102,7 +102,7 @@
         app:quote_colorSecondary="@color/signal_text_primary"
         tools:visibility="visible" />
 
-    <seraph.zion.signal.components.LinkPreviewView
+    <org.thoughtcrime.securesms.components.LinkPreviewView
         android:id="@+id/link_preview"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -121,7 +121,7 @@
         app:barrierDirection="bottom"
         app:constraint_referenced_ids="edit_message_title,edit_message_thumbnail,quote_view,link_preview" />
 
-    <seraph.zion.signal.components.emoji.EmojiToggle
+    <org.thoughtcrime.securesms.components.emoji.EmojiToggle
         android:id="@+id/emoji_toggle"
         android:layout_width="wrap_content"
         android:layout_height="@dimen/conversation_compose_height"
@@ -136,7 +136,7 @@
         app:layout_constraintTop_toBottomOf="@id/compose_bubble_top_elements"
         app:tint="@color/signal_colorOnSurfaceVariant" />
 
-    <seraph.zion.signal.components.ComposeText
+    <org.thoughtcrime.securesms.components.ComposeText
         android:id="@+id/embedded_text_editor"
         style="@style/ComposeEditText"
         android:layout_width="0dp"
@@ -153,7 +153,7 @@
         tools:hint="Send TextSecure message">
 
         <requestFocus />
-    </seraph.zion.signal.components.ComposeText>
+    </org.thoughtcrime.securesms.components.ComposeText>
 
     <androidx.constraintlayout.widget.Barrier
         android:id="@+id/attachment_barrier"
@@ -162,7 +162,7 @@
         app:barrierDirection="start"
         app:constraint_referenced_ids="quick_attachment_toggle,inline_attachment_container" />
 
-    <seraph.zion.signal.components.HidingLinearLayout
+    <org.thoughtcrime.securesms.components.HidingLinearLayout
         android:id="@+id/quick_attachment_toggle"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
@@ -186,7 +186,7 @@
             app:srcCompat="@drawable/ic_camera_24"
             app:tint="@color/signal_colorOnSurfaceVariant" />
 
-        <seraph.zion.signal.components.MicrophoneRecorderView
+        <org.thoughtcrime.securesms.components.MicrophoneRecorderView
             android:id="@+id/recorder_view"
             android:layout_width="24dp"
             android:layout_height="match_parent"
@@ -198,11 +198,11 @@
 
             <include layout="@layout/microphone_recorder_view" />
 
-        </seraph.zion.signal.components.MicrophoneRecorderView>
+        </org.thoughtcrime.securesms.components.MicrophoneRecorderView>
 
-    </seraph.zion.signal.components.HidingLinearLayout>
+    </org.thoughtcrime.securesms.components.HidingLinearLayout>
 
-    <seraph.zion.signal.components.HidingLinearLayout
+    <org.thoughtcrime.securesms.components.HidingLinearLayout
         android:id="@+id/inline_attachment_container"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
@@ -224,7 +224,7 @@
             app:srcCompat="@drawable/ic_plus_24"
             app:tint="@color/signal_colorOnSurface" />
 
-    </seraph.zion.signal.components.HidingLinearLayout>
+    </org.thoughtcrime.securesms.components.HidingLinearLayout>
 
     <include
         layout="@layout/recording_layout"
@@ -236,7 +236,7 @@
         app:layout_constraintTop_toBottomOf="@id/compose_bubble_top_elements"
         tools:visibility="gone" />
 
-    <seraph.zion.signal.conversation.VoiceNoteDraftView
+    <org.thoughtcrime.securesms.conversation.VoiceNoteDraftView
         android:id="@+id/voice_note_draft_view"
         android:layout_width="0dp"
         android:layout_height="@dimen/conversation_compose_height"
@@ -247,7 +247,7 @@
         app:layout_constraintTop_toBottomOf="@id/compose_bubble_top_elements"
         tools:visibility="gone" />
 
-    <seraph.zion.signal.components.AnimatingToggle
+    <org.thoughtcrime.securesms.components.AnimatingToggle
         android:id="@+id/button_toggle"
         android:layout_width="40dp"
         android:layout_height="40dp"
@@ -285,7 +285,7 @@
             app:srcCompat="@drawable/symbol_check_24"
             app:tint="@color/conversation_send_button_tint" />
 
-        <seraph.zion.signal.components.SendButton
+        <org.thoughtcrime.securesms.components.SendButton
             android:id="@+id/send_button"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -297,6 +297,6 @@
             app:srcCompat="@drawable/ic_send_unlock_24"
             app:tint="@color/conversation_send_button_tint" />
 
-    </seraph.zion.signal.components.AnimatingToggle>
+    </org.thoughtcrime.securesms.components.AnimatingToggle>
 
-</seraph.zion.signal.components.InputPanel>
+</org.thoughtcrime.securesms.components.InputPanel>

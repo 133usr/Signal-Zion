@@ -7,13 +7,13 @@
 
     <fragment
         android:id="@+id/donateToSignalFragment"
-        android:name="seraph.zion.signal.components.settings.app.subscription.donate.DonateToSignalFragment"
+        android:name="org.thoughtcrime.securesms.components.settings.app.subscription.donate.DonateToSignalFragment"
         android:label="donate_to_signal_fragment"
         tools:layout="@layout/dsl_settings_fragment">
 
         <argument
             android:name="start_type"
-            app:argType="seraph.zion.signal.components.settings.app.subscription.donate.DonateToSignalType"
+            app:argType="org.thoughtcrime.securesms.components.settings.app.subscription.donate.DonateToSignalType"
             app:nullable="false" />
 
         <action
@@ -56,20 +56,20 @@
 
     <dialog
         android:id="@+id/gatewaySelectorBottomSheet"
-        android:name="seraph.zion.signal.components.settings.app.subscription.donate.gateway.GatewaySelectorBottomSheet"
+        android:name="org.thoughtcrime.securesms.components.settings.app.subscription.donate.gateway.GatewaySelectorBottomSheet"
         android:label="gateway_selector_bottom_sheet"
         tools:layout="@layout/dsl_settings_bottom_sheet">
 
         <argument
             android:name="request"
-            app:argType="seraph.zion.signal.components.settings.app.subscription.donate.gateway.GatewayRequest"
+            app:argType="org.thoughtcrime.securesms.components.settings.app.subscription.donate.gateway.GatewayRequest"
             app:nullable="false" />
 
     </dialog>
 
     <dialog
         android:id="@+id/setDonationCurrencyFragment"
-        android:name="seraph.zion.signal.components.settings.app.subscription.currency.SetCurrencyFragment"
+        android:name="org.thoughtcrime.securesms.components.settings.app.subscription.currency.SetCurrencyFragment"
         android:label="set_currency_fragment"
         tools:layout="@layout/dsl_settings_fragment">
 
@@ -84,18 +84,18 @@
 
     <dialog
         android:id="@+id/stripePaymentInProgressFragment"
-        android:name="seraph.zion.signal.components.settings.app.subscription.donate.stripe.StripePaymentInProgressFragment"
+        android:name="org.thoughtcrime.securesms.components.settings.app.subscription.donate.stripe.StripePaymentInProgressFragment"
         android:label="stripe_payment_in_progress_fragment"
         tools:layout="@layout/donation_in_progress_fragment">
 
         <argument
             android:name="action"
-            app:argType="seraph.zion.signal.components.settings.app.subscription.donate.DonationProcessorAction"
+            app:argType="org.thoughtcrime.securesms.components.settings.app.subscription.donate.DonationProcessorAction"
             app:nullable="false" />
 
         <argument
             android:name="request"
-            app:argType="seraph.zion.signal.components.settings.app.subscription.donate.gateway.GatewayRequest"
+            app:argType="org.thoughtcrime.securesms.components.settings.app.subscription.donate.gateway.GatewayRequest"
             app:nullable="false" />
 
         <argument
@@ -110,13 +110,13 @@
 
     <dialog
         android:id="@+id/thanksForYourSupportBottomSheetDialog"
-        android:name="seraph.zion.signal.components.settings.app.subscription.thanks.ThanksForYourSupportBottomSheetDialogFragment"
+        android:name="org.thoughtcrime.securesms.components.settings.app.subscription.thanks.ThanksForYourSupportBottomSheetDialogFragment"
         android:label="thanks_for_your_support_bottom_sheet_dialog"
         tools:layout="@layout/thanks_for_your_support_bottom_sheet_dialog_fragment">
 
         <argument
             android:name="badge"
-            app:argType="seraph.zion.signal.badges.models.Badge"
+            app:argType="org.thoughtcrime.securesms.badges.models.Badge"
             app:nullable="false" />
 
         <argument
@@ -127,19 +127,19 @@
 
     <dialog
         android:id="@+id/subscribeLearnMoreBottomSheetDialog"
-        android:name="seraph.zion.signal.components.settings.app.subscription.subscribe.SubscribeLearnMoreBottomSheetDialogFragment"
+        android:name="org.thoughtcrime.securesms.components.settings.app.subscription.subscribe.SubscribeLearnMoreBottomSheetDialogFragment"
         android:label="subscribe_learn_more_bottom_sheet_dialog"
         tools:layout="@layout/subscribe_learn_more_bottom_sheet_dialog_fragment" />
 
     <fragment
         android:id="@+id/creditCardFragment"
-        android:name="seraph.zion.signal.components.settings.app.subscription.donate.card.CreditCardFragment"
+        android:name="org.thoughtcrime.securesms.components.settings.app.subscription.donate.card.CreditCardFragment"
         android:label="credit_card_fragment"
         tools:layout="@layout/credit_card_fragment">
 
         <argument
             android:name="request"
-            app:argType="seraph.zion.signal.components.settings.app.subscription.donate.gateway.GatewayRequest"
+            app:argType="org.thoughtcrime.securesms.components.settings.app.subscription.donate.gateway.GatewayRequest"
             app:nullable="false" />
 
         <action
@@ -152,7 +152,7 @@
 
     <dialog
         android:id="@+id/stripe3dsDialogFragment"
-        android:name="seraph.zion.signal.components.settings.app.subscription.donate.stripe.Stripe3DSDialogFragment"
+        android:name="org.thoughtcrime.securesms.components.settings.app.subscription.donate.stripe.Stripe3DSDialogFragment"
         android:label="stripe_3ds_dialog_fragment"
         tools:layout="@layout/donation_webview_fragment">
 
@@ -168,30 +168,30 @@
 
         <argument
             android:name="stripe3DSData"
-            app:argType="seraph.zion.signal.components.settings.app.subscription.donate.stripe.Stripe3DSData"
+            app:argType="org.thoughtcrime.securesms.components.settings.app.subscription.donate.stripe.Stripe3DSData"
             app:nullable="false" />
     </dialog>
 
     <dialog
         android:id="@+id/yourInformationIsPrivateBottomSheet"
-        android:name="seraph.zion.signal.components.settings.app.subscription.donate.card.YourInformationIsPrivateBottomSheet"
+        android:name="org.thoughtcrime.securesms.components.settings.app.subscription.donate.card.YourInformationIsPrivateBottomSheet"
         android:label="your_information_is_private_bottom_sheet"
         tools:layout="@layout/dsl_settings_bottom_sheet" />
 
     <dialog
         android:id="@+id/paypalPaymentInProgressFragment"
-        android:name="seraph.zion.signal.components.settings.app.subscription.donate.paypal.PayPalPaymentInProgressFragment"
+        android:name="org.thoughtcrime.securesms.components.settings.app.subscription.donate.paypal.PayPalPaymentInProgressFragment"
         android:label="paypal_payment_in_progress"
         tools:layout="@layout/donation_in_progress_fragment">
 
         <argument
             android:name="action"
-            app:argType="seraph.zion.signal.components.settings.app.subscription.donate.DonationProcessorAction"
+            app:argType="org.thoughtcrime.securesms.components.settings.app.subscription.donate.DonationProcessorAction"
             app:nullable="false" />
 
         <argument
             android:name="request"
-            app:argType="seraph.zion.signal.components.settings.app.subscription.donate.gateway.GatewayRequest"
+            app:argType="org.thoughtcrime.securesms.components.settings.app.subscription.donate.gateway.GatewayRequest"
             app:nullable="false" />
         <action
             android:id="@+id/action_paypalPaymentInProgressFragment_to_paypalConfirmationFragment"
@@ -203,7 +203,7 @@
 
     <dialog
         android:id="@+id/paypalConfirmationFragment"
-        android:name="seraph.zion.signal.components.settings.app.subscription.donate.paypal.PayPalConfirmationDialogFragment"
+        android:name="org.thoughtcrime.securesms.components.settings.app.subscription.donate.paypal.PayPalConfirmationDialogFragment"
         android:label="paypal_confirmation_dialog_fragment"
         tools:layout="@layout/donation_webview_fragment">
 
@@ -216,24 +216,24 @@
 
     <dialog
         android:id="@+id/paypalCompleteOrderBottomSheet"
-        android:name="seraph.zion.signal.components.settings.app.subscription.donate.paypal.PayPalCompleteOrderBottomSheet"
+        android:name="org.thoughtcrime.securesms.components.settings.app.subscription.donate.paypal.PayPalCompleteOrderBottomSheet"
         android:label="paypal_complete_order_bottom_sheet"
         tools:layout="@layout/dsl_settings_bottom_sheet">
 
         <argument
             android:name="request"
-            app:argType="seraph.zion.signal.components.settings.app.subscription.donate.gateway.GatewayRequest"
+            app:argType="org.thoughtcrime.securesms.components.settings.app.subscription.donate.gateway.GatewayRequest"
             app:nullable="false" />
     </dialog>
 
     <fragment
         android:id="@+id/bankTransferMandateFragment"
-        android:name="seraph.zion.signal.components.settings.app.subscription.donate.transfer.mandate.BankTransferMandateFragment"
+        android:name="org.thoughtcrime.securesms.components.settings.app.subscription.donate.transfer.mandate.BankTransferMandateFragment"
         android:label="bank_transfer_mandate_fragment">
 
         <argument
             android:name="response"
-            app:argType="seraph.zion.signal.components.settings.app.subscription.donate.gateway.GatewayResponse"
+            app:argType="org.thoughtcrime.securesms.components.settings.app.subscription.donate.gateway.GatewayResponse"
             app:nullable="false" />
         <action
             android:id="@+id/action_bankTransferMandateFragment_to_bankTransferDetailsFragment"
@@ -248,12 +248,12 @@
 
     <fragment
         android:id="@+id/bankTransferDetailsFragment"
-        android:name="seraph.zion.signal.components.settings.app.subscription.donate.transfer.details.BankTransferDetailsFragment"
+        android:name="org.thoughtcrime.securesms.components.settings.app.subscription.donate.transfer.details.BankTransferDetailsFragment"
         android:label="bank_transfer_details_fragment">
 
         <argument
             android:name="request"
-            app:argType="seraph.zion.signal.components.settings.app.subscription.donate.gateway.GatewayRequest"
+            app:argType="org.thoughtcrime.securesms.components.settings.app.subscription.donate.gateway.GatewayRequest"
             app:nullable="false" />
         <action
             android:id="@+id/action_bankTransferDetailsFragment_to_stripePaymentInProgressFragment"
@@ -265,24 +265,24 @@
 
     <dialog
         android:id="@+id/donationPendingBottomSheet"
-        android:name="seraph.zion.signal.components.settings.app.subscription.DonationPendingBottomSheet"
+        android:name="org.thoughtcrime.securesms.components.settings.app.subscription.DonationPendingBottomSheet"
         android:label="donation_pending_bottom_sheet"
         tools:layout="@layout/dsl_settings_bottom_sheet">
 
         <argument
             android:name="request"
-            app:argType="seraph.zion.signal.components.settings.app.subscription.donate.gateway.GatewayRequest"
+            app:argType="org.thoughtcrime.securesms.components.settings.app.subscription.donate.gateway.GatewayRequest"
             app:nullable="false" />
     </dialog>
 
     <fragment
         android:id="@+id/idealTransferDetailsFragment"
-        android:name="seraph.zion.signal.components.settings.app.subscription.donate.transfer.ideal.IdealTransferDetailsFragment"
+        android:name="org.thoughtcrime.securesms.components.settings.app.subscription.donate.transfer.ideal.IdealTransferDetailsFragment"
         android:label="ideal_transfer_details_fragment">
 
         <argument
             android:name="request"
-            app:argType="seraph.zion.signal.components.settings.app.subscription.donate.gateway.GatewayRequest"
+            app:argType="org.thoughtcrime.securesms.components.settings.app.subscription.donate.gateway.GatewayRequest"
             app:nullable="false" />
         <action
             android:id="@+id/action_bankTransferDetailsFragment_to_stripePaymentInProgressFragment"
@@ -297,7 +297,7 @@
 
     <dialog
         android:id="@+id/idealTransferBankSelectionDialogFragment"
-        android:name="seraph.zion.signal.components.settings.app.subscription.donate.transfer.ideal.IdealTransferDetailsBankSelectionDialogFragment"
+        android:name="org.thoughtcrime.securesms.components.settings.app.subscription.donate.transfer.ideal.IdealTransferDetailsBankSelectionDialogFragment"
         android:label="ideal_transfer_bank_selection">
 
     </dialog>

@@ -14,7 +14,7 @@
         android:layout_height="match_parent"
         android:clipChildren="false">
 
-        <seraph.zion.signal.video.videoconverter.VideoThumbnailsRangeSelectorView
+        <org.thoughtcrime.securesms.video.videoconverter.VideoThumbnailsRangeSelectorView
             android:id="@+id/video_timeline"
             android:layout_width="match_parent"
             android:layout_height="72dp"

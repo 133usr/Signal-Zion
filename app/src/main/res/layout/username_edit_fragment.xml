@@ -162,7 +162,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/icon" />
 
-    <seraph.zion.signal.util.views.LearnMoreTextView
+    <org.thoughtcrime.securesms.util.views.LearnMoreTextView
         android:id="@+id/username_description"
         style="@style/Signal.Text.BodyMedium"
         android:layout_width="0dp"
@@ -210,7 +210,7 @@
         app:tint="@color/signal_colorOnPrimaryContainer"
         tools:visibility="visible" />
 
-    <seraph.zion.signal.util.views.CircularProgressMaterialButton
+    <org.thoughtcrime.securesms.util.views.CircularProgressMaterialButton
         android:id="@+id/username_submit_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -222,7 +222,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <seraph.zion.signal.util.views.CircularProgressMaterialButton
+    <org.thoughtcrime.securesms.util.views.CircularProgressMaterialButton
         android:id="@+id/username_delete_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -234,7 +234,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <seraph.zion.signal.components.ProgressCard
+    <org.thoughtcrime.securesms.components.ProgressCard
         android:id="@+id/username_progress_card"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

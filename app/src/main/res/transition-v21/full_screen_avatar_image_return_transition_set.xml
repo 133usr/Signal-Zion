@@ -6,6 +6,6 @@
     <changeImageTransform />
     <changeBounds />
 
-    <transition class="seraph.zion.signal.animation.transitions.SquareToCircleImageViewTransition" />
+    <transition class="org.thoughtcrime.securesms.animation.transitions.SquareToCircleImageViewTransition" />
 
 </transitionSet>

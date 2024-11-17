@@ -20,7 +20,7 @@
     <uses-feature android:name="android.hardware.telephony" android:required="false" />
 
     <uses-permission android:name="android.permission.USE_FINGERPRINT"/>
-    <uses-permission android:name="seraph.zion.signal.ACCESS_SECRETS"/>
+    <uses-permission android:name="org.thoughtcrime.securesms.ACCESS_SECRETS"/>
     <uses-permission android:name="android.permission.READ_PROFILE"/>
     <uses-permission android:name="android.permission.BROADCAST_WAP_PUSH"
                      tools:ignore="ProtectedPermissions"/>
@@ -631,7 +631,7 @@
               android:exported="false">
         <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="seraph.zion.signal.MainActivity" />
+                android:value="org.thoughtcrime.securesms.MainActivity" />
     </activity>
 
     <activity android:name=".conversation.BubbleConversationActivity"
@@ -783,7 +783,7 @@
 
         <meta-data
             android:name="android.support.PARENT_ACTIVITY"
-            android:value="seraph.zion.signal.MainActivity" />
+            android:value="org.thoughtcrime.securesms.MainActivity" />
     </activity>
 
     <activity
@@ -930,11 +930,11 @@
         <intent-filter>
             <action android:name="android.intent.action.VIEW" />
             <category android:name="android.intent.category.DEFAULT" />
-            <data android:mimeType="vnd.android.cursor.item/vnd.seraph.zion.signal.contact" />
+            <data android:mimeType="vnd.android.cursor.item/vnd.org.thoughtcrime.securesms.contact" />
         </intent-filter>
     </activity>
 
-    <activity android:name="seraph.zion.signal.webrtc.VoiceCallShare"
+    <activity android:name="org.thoughtcrime.securesms.webrtc.VoiceCallShare"
               android:exported="true"
               android:excludeFromRecents="true"
               android:permission="android.permission.CALL_PHONE"
@@ -945,7 +945,7 @@
         <intent-filter>
             <action android:name="android.intent.action.VIEW" />
             <category android:name="android.intent.category.DEFAULT" />
-            <data android:mimeType="vnd.android.cursor.item/vnd.seraph.zion.signal.call" />
+            <data android:mimeType="vnd.android.cursor.item/vnd.org.thoughtcrime.securesms.call" />
         </intent-filter>
 
     </activity>
@@ -1193,7 +1193,7 @@
     <receiver android:name=".service.SmsDeliveryListener"
               android:exported="true">
         <intent-filter>
-            <action android:name="seraph.zion.signal.services.MESSAGE_SENT"/>
+            <action android:name="org.thoughtcrime.securesms.services.MESSAGE_SENT"/>
         </intent-filter>
     </receiver>
 
@@ -1201,7 +1201,7 @@
               android:enabled="true"
               android:exported="false">
         <intent-filter>
-            <action android:name="seraph.zion.signal.notifications.CLEAR"/>
+            <action android:name="org.thoughtcrime.securesms.notifications.CLEAR"/>
         </intent-filter>
     </receiver>
 
@@ -1209,7 +1209,7 @@
               android:enabled="true"
               android:exported="false">
         <intent-filter>
-            <action android:name="seraph.zion.signal.notifications.WEAR_REPLY"/>
+            <action android:name="org.thoughtcrime.securesms.notifications.WEAR_REPLY"/>
         </intent-filter>
     </receiver>
 
@@ -1273,7 +1273,7 @@
     <receiver android:name=".service.BootReceiver" android:exported="false">
         <intent-filter>
             <action android:name="android.intent.action.BOOT_COMPLETED"/>
-            <action android:name="seraph.zion.signal.RESTART"/>
+            <action android:name="org.thoughtcrime.securesms.RESTART"/>
         </intent-filter>
     </receiver>
 
@@ -1298,7 +1298,7 @@
     <receiver android:name=".messageprocessingalarm.RoutineMessageFetchReceiver" android:exported="false">
         <intent-filter>
             <action android:name="android.intent.action.BOOT_COMPLETED" />
-            <action android:name="seraph.zion.signal.action.PROCESS_MESSAGES" />
+            <action android:name="org.thoughtcrime.securesms.action.PROCESS_MESSAGES" />
         </intent-filter>
     </receiver>
 
@@ -1308,7 +1308,7 @@
         </intent-filter>
     </receiver>
 
-    <receiver android:name="seraph.zion.signal.jobs.ForegroundServiceUtil$Receiver" android:exported="false" />
+    <receiver android:name="org.thoughtcrime.securesms.jobs.ForegroundServiceUtil$Receiver" android:exported="false" />
 
     <receiver android:name=".service.PersistentConnectionBootListener" android:exported="false">
         <intent-filter>
@@ -1326,7 +1326,7 @@
 
     <receiver android:name=".notifications.DeleteNotificationReceiver" android:exported="false">
         <intent-filter>
-            <action android:name="seraph.zion.signal.DELETE_NOTIFICATION"/>
+            <action android:name="org.thoughtcrime.securesms.DELETE_NOTIFICATION"/>
         </intent-filter>
     </receiver>
 
@@ -1372,13 +1372,13 @@
         </intent-filter>
     </receiver>
 
-    <service android:name="seraph.zion.signal.service.webrtc.ActiveCallManager$ActiveCallForegroundService" android:exported="false" />
-    <receiver android:name="seraph.zion.signal.service.webrtc.ActiveCallManager$ActiveCallServiceReceiver" android:exported="false">
+    <service android:name="org.thoughtcrime.securesms.service.webrtc.ActiveCallManager$ActiveCallForegroundService" android:exported="false" />
+    <receiver android:name="org.thoughtcrime.securesms.service.webrtc.ActiveCallManager$ActiveCallServiceReceiver" android:exported="false">
         <intent-filter>
-            <action android:name="seraph.zion.signal.service.webrtc.ActiveCallAction.DENY"/>
+            <action android:name="org.thoughtcrime.securesms.service.webrtc.ActiveCallAction.DENY"/>
         </intent-filter>
         <intent-filter>
-            <action android:name="seraph.zion.signal.service.webrtc.ActiveCallAction.HANGUP"/>
+            <action android:name="org.thoughtcrime.securesms.service.webrtc.ActiveCallAction.HANGUP"/>
         </intent-filter>
     </receiver>
 

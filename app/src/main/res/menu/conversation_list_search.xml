@@ -6,7 +6,7 @@
     <item
             android:id="@+id/action_filter_search"
             android:title=" "
-            app:actionViewClass="seraph.zion.signal.components.SearchView"
+            app:actionViewClass="org.thoughtcrime.securesms.components.SearchView"
             app:showAsAction="collapseActionView|always"
             tools:ignore="HardcodedText" />
 
