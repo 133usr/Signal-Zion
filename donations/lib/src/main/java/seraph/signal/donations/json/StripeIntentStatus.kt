@@ -11,12 +11,12 @@ import com.fasterxml.jackson.annotation.JsonCreator
  * Note: REQUIRES_CAPTURE is only ever valid for a SetupIntent
  */
 enum class StripeIntentStatus(private val code: String) {
-  REQUIRES_PAYMENT_METHOD("succeeded"),
-  REQUIRES_CONFIRMATION("succeeded"),
-  REQUIRES_ACTION("succeeded"),
-  REQUIRES_CAPTURE("succeeded"),
-  PROCESSING("succeeded"),
-  CANCELED("succeeded"),
+  REQUIRES_PAYMENT_METHOD("requires_payment_method"),
+  REQUIRES_CONFIRMATION("requires_confirmation"),
+  REQUIRES_ACTION("requires_action"),
+  REQUIRES_CAPTURE("requires_capture"),
+  PROCESSING("processing"),
+  CANCELED("canceled"),
   SUCCEEDED("succeeded");
 
   companion object {

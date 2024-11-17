@@ -17,7 +17,6 @@
 package seraph.zion.signal;
 
 import android.content.Context;
-import android.view.KeyEvent;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -41,6 +40,7 @@ import org.signal.core.util.tracing.Tracer;
 import org.signal.glide.SignalGlideCodecs;
 import org.signal.libsignal.protocol.logging.SignalProtocolLoggerProvider;
 import org.signal.ringrtc.CallManager;
+<<<<<<< HEAD:app/src/main/java/seraph/seraph/signal/ApplicationContext.java
 import seraph.zion.signal.avatar.AvatarPickerStorage;
 import seraph.zion.signal.crypto.AttachmentSecretProvider;
 import seraph.zion.signal.crypto.DatabaseSecretProvider;
@@ -102,6 +102,68 @@ import seraph.zion.signal.util.Util;
 import seraph.zion.signal.util.VersionTracker;
 import seraph.zion.signal.util.VolumeDown_Listener;
 import seraph.zion.signal.util.dynamiclanguage.DynamicLanguageContextWrapper;
+=======
+import org.thoughtcrime.securesms.avatar.AvatarPickerStorage;
+import org.thoughtcrime.securesms.crypto.AttachmentSecretProvider;
+import org.thoughtcrime.securesms.crypto.DatabaseSecretProvider;
+import org.thoughtcrime.securesms.database.LogDatabase;
+import org.thoughtcrime.securesms.database.SignalDatabase;
+import org.thoughtcrime.securesms.database.SqlCipherLibraryLoader;
+import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
+import org.thoughtcrime.securesms.dependencies.ApplicationDependencyProvider;
+import org.thoughtcrime.securesms.emoji.EmojiSource;
+import org.thoughtcrime.securesms.emoji.JumboEmoji;
+import org.thoughtcrime.securesms.gcm.FcmFetchManager;
+import org.thoughtcrime.securesms.jobs.AccountConsistencyWorkerJob;
+import org.thoughtcrime.securesms.jobs.CheckServiceReachabilityJob;
+import org.thoughtcrime.securesms.jobs.DownloadLatestEmojiDataJob;
+import org.thoughtcrime.securesms.jobs.EmojiSearchIndexDownloadJob;
+import org.thoughtcrime.securesms.jobs.ExternalLaunchDonationJob;
+import org.thoughtcrime.securesms.jobs.FcmRefreshJob;
+import org.thoughtcrime.securesms.jobs.FontDownloaderJob;
+import org.thoughtcrime.securesms.jobs.GroupRingCleanupJob;
+import org.thoughtcrime.securesms.jobs.GroupV2UpdateSelfProfileKeyJob;
+import org.thoughtcrime.securesms.jobs.MultiDeviceContactUpdateJob;
+import org.thoughtcrime.securesms.jobs.PnpInitializeDevicesJob;
+import org.thoughtcrime.securesms.jobs.PreKeysSyncJob;
+import org.thoughtcrime.securesms.jobs.ProfileUploadJob;
+import org.thoughtcrime.securesms.jobs.RefreshSvrCredentialsJob;
+import org.thoughtcrime.securesms.jobs.RetrieveProfileJob;
+import org.thoughtcrime.securesms.jobs.RetrieveRemoteAnnouncementsJob;
+import org.thoughtcrime.securesms.jobs.StoryOnboardingDownloadJob;
+import org.thoughtcrime.securesms.jobs.SubscriptionKeepAliveJob;
+import org.thoughtcrime.securesms.keyvalue.KeepMessagesDuration;
+import org.thoughtcrime.securesms.keyvalue.SignalStore;
+import org.thoughtcrime.securesms.logging.CustomSignalProtocolLogger;
+import org.thoughtcrime.securesms.logging.PersistentLogger;
+import org.thoughtcrime.securesms.messageprocessingalarm.RoutineMessageFetchReceiver;
+import org.thoughtcrime.securesms.migrations.ApplicationMigrations;
+import org.thoughtcrime.securesms.mms.SignalGlideComponents;
+import org.thoughtcrime.securesms.mms.SignalGlideModule;
+import org.thoughtcrime.securesms.providers.BlobProvider;
+import org.thoughtcrime.securesms.ratelimit.RateLimitUtil;
+import org.thoughtcrime.securesms.recipients.Recipient;
+import org.thoughtcrime.securesms.registration.RegistrationUtil;
+import org.thoughtcrime.securesms.ringrtc.RingRtcLogger;
+import org.thoughtcrime.securesms.service.DirectoryRefreshListener;
+import org.thoughtcrime.securesms.service.KeyCachingService;
+import org.thoughtcrime.securesms.service.LocalBackupListener;
+import org.thoughtcrime.securesms.service.RotateSenderCertificateListener;
+import org.thoughtcrime.securesms.service.RotateSignedPreKeyListener;
+import org.thoughtcrime.securesms.apkupdate.ApkUpdateRefreshListener;
+import org.thoughtcrime.securesms.service.webrtc.AndroidTelecomUtil;
+import org.thoughtcrime.securesms.storage.StorageSyncHelper;
+import org.thoughtcrime.securesms.util.AppForegroundObserver;
+import org.thoughtcrime.securesms.util.AppStartup;
+import org.thoughtcrime.securesms.util.DynamicTheme;
+import org.thoughtcrime.securesms.util.FeatureFlags;
+import org.thoughtcrime.securesms.util.SignalLocalMetrics;
+import org.thoughtcrime.securesms.util.SignalUncaughtExceptionHandler;
+import org.thoughtcrime.securesms.util.TextSecurePreferences;
+import org.thoughtcrime.securesms.util.Util;
+import org.thoughtcrime.securesms.util.VersionTracker;
+import org.thoughtcrime.securesms.util.dynamiclanguage.DynamicLanguageContextWrapper;
+>>>>>>> parent of 7d0641bdb6 (app now compiling):app/src/main/java/org/thoughtcrime/securesms/ApplicationContext.java
 
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
@@ -139,7 +201,7 @@ public class ApplicationContext extends MultiDexApplication implements AppForegr
     AppStartup.getInstance().onApplicationCreate();
     SignalLocalMetrics.ColdStart.start();
 
-    long            startTime           = System.currentTimeMillis();
+    long startTime = System.currentTimeMillis();
 
     if (FeatureFlags.internalUser()) {
       Tracer.getInstance().setMaxBufferSize(35_000);
@@ -224,8 +286,6 @@ public class ApplicationContext extends MultiDexApplication implements AppForegr
     SignalLocalMetrics.ColdStart.onApplicationCreateFinished();
     Tracer.getInstance().end("Application#onCreate()");
   }
-
-
 
   @Override
   public void onForeground() {

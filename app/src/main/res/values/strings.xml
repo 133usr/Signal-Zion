@@ -558,7 +558,6 @@
 
     <!-- Show in conversation list overflow menu to open selection bottom sheet -->
     <string name="ConversationListFragment__notification_profile">Notification profile</string>
-    <string name="ConversationListFragment__delete_account">Delete Account!</string>
     <!-- Tooltip shown after you have created your first notification profile -->
     <string name="ConversationListFragment__turn_your_notification_profile_on_or_off_here">Turn your notification profile on or off here.</string>
     <!-- Message shown in top toast to indicate the named profile is on -->
