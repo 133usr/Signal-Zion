@@ -207,7 +207,7 @@ import static android.app.Activity.RESULT_OK;
 public class ConversationListFragment extends MainFragment implements ActionMode.Callback,
                                                                       ConversationListAdapter.OnConversationClickListener,
                                                                       MegaphoneActionController,
-                                                                      ClearFilterViewHolder.OnClearFilterClickListener,
+                                                                       ClearFilterViewHolder.OnClearFilterClickListener,
                                                                       ChatFolderAdapter.Callbacks,
                                                                       ConversationListAdapter.EmptyFolderViewHolder.OnFolderSettingsClickListener
 {
