@@ -640,14 +640,14 @@ public class NotificationChannels {
     messages.setSound(SignalStore.settings().getMessageNotificationSound(), getRingtoneAudioAttributes());
     setLedPreference(messages, SignalStore.settings().getMessageLedColor());
 
-    calls.setShowBadge(false);
-    backups.setShowBadge(false);
-    lockedStatus.setShowBadge(false);
-    other.setShowBadge(false);
+    calls.setShowBadge(true);
+    backups.setShowBadge(true);
+    lockedStatus.setShowBadge(true);
+    other.setShowBadge(true);
     setVibrationEnabled(other, false);
     voiceNotes.setShowBadge(false);
     joinEvents.setShowBadge(false);
-    background.setShowBadge(false);
+    background.setShowBadge(true);
     callStatus.setShowBadge(false);
     appAlerts.setShowBadge(false);
 

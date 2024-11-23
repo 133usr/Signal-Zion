@@ -1,6 +1,7 @@
 package org.thoughtcrime.securesms.jobs;
 
 import android.text.TextUtils;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -397,6 +398,7 @@ public class RefreshOwnProfileJob extends BaseJob {
                                             .get();
 
       Log.d(TAG, "Marking subscription badge as expired, should notify next time the conversation list is open.", true);
+
       SignalStore.inAppPayments().setExpiredBadge(mostRecentExpiration);
 
       if (!InAppPaymentsRepository.isUserManuallyCancelled(InAppPaymentSubscriberRecord.Type.DONATION)) {

@@ -8,6 +8,7 @@ android {
   defaultConfig {
     applicationId = "org.signal.donations.app"
   }
+
 }
 
 dependencies {

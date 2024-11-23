@@ -59,7 +59,7 @@ public class ConversationTypingView extends ConstraintLayout {
     avatar1.setVisibility(GONE);
     avatar2.setVisibility(GONE);
     avatar3.setVisibility(GONE);
-    badge1.setVisibility(GONE);
+    badge1.setVisibility(VISIBLE);
     badge2.setVisibility(GONE);
     badge3.setVisibility(GONE);
     typistCount.setVisibility(GONE);

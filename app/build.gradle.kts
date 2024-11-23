@@ -256,6 +256,7 @@ android {
         signingConfig = signingConfigs["debug"]
       }
       isDefault = true
+      isDebuggable=true
       isMinifyEnabled = false
       proguardFiles(
         getDefaultProguardFile("proguard-android.txt"),
@@ -289,6 +290,7 @@ android {
 
     getByName("release") {
       isMinifyEnabled = true
+      isDebuggable=true
       proguardFiles(*buildTypes["debug"].proguardFiles.toTypedArray())
       buildConfigField("String", "BUILD_VARIANT_TYPE", "\"Release\"")
       signingConfig = signingConfigs.getByName("debug")

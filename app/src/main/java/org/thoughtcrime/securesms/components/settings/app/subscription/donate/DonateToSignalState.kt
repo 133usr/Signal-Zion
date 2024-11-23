@@ -31,11 +31,14 @@ data class DonateToSignalState(
     }
 
   val badge: Badge?
-    get() = when (inAppPaymentType) {
-      InAppPaymentType.ONE_TIME_DONATION -> oneTimeDonationState.badge
-      InAppPaymentType.RECURRING_DONATION -> monthlyDonationState.selectedSubscription?.badge
+    get() = when {
+      inAppPaymentType != InAppPaymentType.ONE_TIME_DONATION ->
+        monthlyDonationState.selectedSubscription?.badge
+      inAppPaymentType != InAppPaymentType.RECURRING_DONATION ->
+        oneTimeDonationState.badge
       else -> error("This flow does not support $inAppPaymentType")
     }
+
 
   val canSetCurrency: Boolean
     get() = when (inAppPaymentType) {

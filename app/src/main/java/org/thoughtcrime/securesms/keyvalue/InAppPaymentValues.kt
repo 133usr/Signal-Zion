@@ -242,6 +242,7 @@ class InAppPaymentValues internal constructor(store: KeyValueStore) : SignalStor
 
   @Deprecated("Replaced with InAppPaymentSubscriberTable")
   fun getSubscriber(currency: Currency): InAppPaymentSubscriberRecord? {
+
     val currencyCode = currency.currencyCode
     val subscriberIdBytes = getBlob("$KEY_SUBSCRIBER_ID_PREFIX$currencyCode", null)
 

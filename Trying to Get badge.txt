@@ -1,0 +1,10 @@
+How to get the badge without making a payment:
+
+Understanding how the app starts or inits
+
+Appinitialization.java -> SignalStore ->
+
+
+
+now trying to look into the database of signal stored in the phone
+maybe table there contains something editable.
