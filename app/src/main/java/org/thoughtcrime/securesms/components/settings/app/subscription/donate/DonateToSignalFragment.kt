@@ -3,6 +3,7 @@ package org.thoughtcrime.securesms.components.settings.app.subscription.donate
 import android.text.SpannableStringBuilder
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
@@ -443,7 +444,7 @@ class DonateToSignalFragment :
     animationView.translationX = viewHorizontalCenter - animationHorizontalCenter
 
     animationView.playAnimation()
-
+onPaymentComplete(mockInAppPayment)
     viewProjection.release()
     animationProjection.release()
   }
@@ -506,6 +507,9 @@ class DonateToSignalFragment :
   }
 
   override fun onPaymentComplete(inAppPayment: InAppPaymentTable.InAppPayment) {
+    Toast.makeText(context, "badge: "+inAppPayment.data?.badge, Toast.LENGTH_SHORT).show()
+
+
     findNavController().safeNavigate(DonateToSignalFragmentDirections.actionDonateToSignalFragmentToThanksForYourSupportBottomSheetDialog(Badges.fromDatabaseBadge(inAppPayment.data.badge!!)))
   }
 

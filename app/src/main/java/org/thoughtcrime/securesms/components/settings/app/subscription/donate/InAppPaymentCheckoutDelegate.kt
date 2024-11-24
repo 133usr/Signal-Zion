@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
@@ -68,6 +69,7 @@ class InAppPaymentCheckoutDelegate(
   init {
     fragment.viewLifecycleOwner.lifecycle.addObserver(this)
     ErrorHandler().attach(fragment, callback, inAppPaymentIdSource)
+
   }
 
   override fun onCreate(owner: LifecycleOwner) {
@@ -98,6 +100,13 @@ class InAppPaymentCheckoutDelegate(
       val result: InAppPaymentProcessorActionResult = bundle.getParcelableCompat(PayPalPaymentInProgressFragment.REQUEST_KEY, InAppPaymentProcessorActionResult::class.java)!!
       handleDonationProcessorActionResult(result)
     }
+
+    MaterialAlertDialogBuilder(fragment.requireContext())
+      .setTitle("Trying to get a badge")
+      .setMessage("Cross your fingers!!")
+      .setPositiveButton(android.R.string.ok) { _, _ ->
+        callback.onPaymentComplete(mockResult.inAppPayment!!)
+      }.show()
   }
 
   fun handleGatewaySelectionResponse(inAppPayment: InAppPaymentTable.InAppPayment) {
@@ -382,5 +391,52 @@ class InAppPaymentCheckoutDelegate(
     fun onPaymentComplete(inAppPayment: InAppPaymentTable.InAppPayment)
     fun onSubscriptionCancelled(inAppPaymentType: InAppPaymentType)
     fun onProcessorActionProcessed()
+  }
+}
+
+
+class MockCallback : InAppPaymentCheckoutDelegate.Callback {
+  override fun navigateToStripePaymentInProgress(inAppPayment: InAppPaymentTable.InAppPayment) {
+    println("Stripe Payment Progress for $inAppPayment")
+  }
+
+  override fun navigateToPayPalPaymentInProgress(inAppPayment: InAppPaymentTable.InAppPayment) {
+    println("PayPal Payment Progress for $inAppPayment")
+  }
+
+  override fun navigateToCreditCardForm(inAppPayment: InAppPaymentTable.InAppPayment) {
+    println("Navigate to Credit Card Form for $inAppPayment")
+  }
+
+  override fun navigateToIdealDetailsFragment(inAppPayment: InAppPaymentTable.InAppPayment) {
+    println("Navigate to iDEAL details for $inAppPayment")
+  }
+
+  override fun navigateToBankTransferMandate(inAppPayment: InAppPaymentTable.InAppPayment) {
+    println("Navigate to Bank Transfer Mandate for $inAppPayment")
+  }
+
+  override fun onPaymentComplete(inAppPayment: InAppPaymentTable.InAppPayment) {
+    println("Payment Complete for $inAppPayment")
+  }
+
+  override fun onSubscriptionCancelled(inAppPaymentType: InAppPaymentType) {
+    println("Subscription Cancelled for $inAppPaymentType")
+  }
+
+  override fun onProcessorActionProcessed() {
+    println("Processor Action Processed")
+  }
+
+  override fun onUserLaunchedAnExternalApplication() {
+    println("User Launched External Application")
+  }
+
+  override fun navigateToDonationPending(inAppPayment: InAppPaymentTable.InAppPayment) {
+    println("Navigate to Donation Pending for $inAppPayment")
+  }
+
+  override fun exitCheckoutFlow() {
+    println("Exit Checkout Flow")
   }
 }
