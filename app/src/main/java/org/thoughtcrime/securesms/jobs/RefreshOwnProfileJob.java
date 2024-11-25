@@ -366,6 +366,7 @@ public class RefreshOwnProfileJob extends BaseJob {
 
   private void setProfileBadges(@Nullable List<SignalServiceProfile.Badge> badges) throws IOException {
     if (badges == null) {
+      Toast.makeText(context, "badges  = null", Toast.LENGTH_SHORT).show();
       return;
     }
 

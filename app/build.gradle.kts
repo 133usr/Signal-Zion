@@ -289,7 +289,7 @@ android {
     }
 
     getByName("release") {
-      isMinifyEnabled = true
+      isMinifyEnabled = false
 //      isDebuggable=true
       proguardFiles(*buildTypes["debug"].proguardFiles.toTypedArray())
       buildConfigField("String", "BUILD_VARIANT_TYPE", "\"Release\"")

@@ -148,11 +148,20 @@ class PayPalPaymentInProgressViewModel(
         )
       }
       .flatMapCompletable { response ->
-        oneTimeInAppPaymentRepository.waitForOneTimeRedemption(
-          inAppPayment = inAppPayment,
-          paymentIntentId = response.paymentId,
-          paymentSourceType = PaymentSourceType.PayPal
-        )
+//        oneTimeInAppPaymentRepository.waitForOneTimeRedemption(
+//          inAppPayment = inAppPayment,
+////          paymentIntentId = response.paymentId,
+//            paymentIntentId = "1RY82308WC9958426",
+//          paymentSourceType = PaymentSourceType.PayPal
+          // Immediately complete the process without waiting for redemption
+          Log.d(TAG, "Simulating immediate success for one-time payment redemption...", true)
+
+            // Simulate success by immediately completing the Completable
+          
+
+//        )
+        Log.e("Completeable.completesd","-----------------------------------------------------------------------------")
+        Completable.complete()
       }
       .subscribeOn(Schedulers.io())
       .subscribeBy(
