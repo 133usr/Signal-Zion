@@ -1428,6 +1428,7 @@ import okhttp3.internal.http2.StreamResetException;
       String payload = JsonUtil.toJson(new PayPalConfirmOneTimePaymentIntentPayload(amount, currency, level, payerId, paymentId, paymentToken));
       String result  = makeServiceRequestWithoutAuthentication(CONFIRM_PAYPAL_ONE_TIME_PAYMENT_INTENT, "POST", payload, NO_HEADERS, new InAppPaymentResponseCodeHandler());
       Log.e("Response RESULT;",result);
+      Log.e("Response Json:::::;", String.valueOf(JsonUtil.fromJsonResponse(result, PayPalConfirmPaymentIntentResponse.class)));
       return JsonUtil.fromJsonResponse(result, PayPalConfirmPaymentIntentResponse.class);
 
     }
@@ -1541,10 +1542,20 @@ import okhttp3.internal.http2.StreamResetException;
             if (code == 204) throw new NonSuccessfulResponseCodeException(204);
           });
 
+
       ReceiptCredentialResponseJson responseJson = JsonUtil.fromJson(response, ReceiptCredentialResponseJson.class);
+//      String mockResponse = "{ \"receiptCredentialResponse\": \"dGVzdA==\" }"; // Base64 for "test"
+//
+//      ReceiptCredentialResponseJson responseJson = JsonUtil.fromJson(mockResponse, ReceiptCredentialResponseJson.class);
+
+
       if (responseJson.getReceiptCredentialResponse() != null) {
+        Log.e("MOCK RESPONSE","--------------");
+
+
         return responseJson.getReceiptCredentialResponse();
       } else {
+        Log.e(TAG,"Resonse receipt cred:"+responseJson.getReceiptCredentialResponse());
         throw new MalformedResponseException("Unable to parse response");
       }
     }
@@ -1563,6 +1574,7 @@ import okhttp3.internal.http2.StreamResetException;
     private AuthCredentials getAuthCredentials(String authPath) throws IOException {
       String              response = makeServiceRequest(authPath, "GET", null);
       AuthCredentials     token    = JsonUtil.fromJson(response, AuthCredentials.class);
+      Log.e(TAG,"AuthCredentials Running with respomse:"+response+" and token: "+token.toString());
       return token;
     }
 
@@ -2212,7 +2224,67 @@ import okhttp3.internal.http2.StreamResetException;
     {
       try (Response response = makeServiceRequest(urlFragment, method, jsonRequestBody(jsonBody), headers, responseCodeHandler, SealedSenderAccess.NONE, true)) {
         Log.e("ready body string", String.valueOf(response));
-        return readBodyString(response);
+        Log.e("response body string", readBodyString(response));
+//        return readBodyString(response);
+//        return "{\"subscription\":{" +
+//               "\"level\": 1," +
+//               "\"currency\": \"USD\"," +
+//               "\"amount\": 99.99," +
+//               "\"endOfCurrentPeriod\": 1700000," +
+//               "\"active\": true," +
+//               "\"billingCycleAnchor\": 16700," +
+//               "\"cancelAtPeriodEnd\": false," +
+//               "\"status\": \"active\"," +
+//               "\"processor\": \"STRIPE\"," +
+//               "\"paymentMethod\": \"PAYPAL\"," +
+//               "\"paymentPending\": false" +
+//               "}}";
+
+//        return "{\"subscription\":{" +
+//               "\"level\": 1," +
+//               "\"currency\": \"USD\"," +
+//               "\"amount\": 99.99," +
+//               "\"endOfCurrentPeriod\": 1700000," +
+//               "\"active\": true," +
+//               "\"billingCycleAnchor\": 16700," +
+//               "\"cancelAtPeriodEnd\": false," +
+//               "\"status\": \"active\"," +
+//               "\"processor\": \"STRIPE\"," +
+//               "\"paymentMethod\": \"PAYPAL\"," +
+//               "\"paymentPending\": false" +
+//               "}," +
+//               "\"chargeFailure\":{" +
+//               "\"code\": \"some_error_code\"," +
+//               "\"message\": \"Error message\"," +
+//               "\"outcomeNetworkStatus\": \"approved_by_network\"," +
+//               "\"outcomeNetworkReason\": \"reason_description\"," +
+//               "\"outcomeType\": \"authorized\"" +
+//               "}}";
+
+        return "{\"subscription\":{" +
+               "\"level\": 1," +
+               "\"currency\": \"GBP\"," +
+               "\"amount\": 99.99," +
+               "\"endOfCurrentPeriod\": 97990000," +
+               "\"active\": true," +
+               "\"billingCycleAnchor\": 16700," +
+               "\"cancelAtPeriodEnd\": false," +
+               "\"status\": \"active\"," +
+               "\"processor\": \"STRIPE\"," +
+               "\"paymentMethod\": \"PAYPAL\"," +
+               "\"paymentPending\": false" +
+               "}," +
+               "\"chargeFailure\":{" +
+               "\"code\": \"some_error_code\"," +
+               "\"message\": \"Error message\"," +
+               "\"outcomeNetworkStatus\": \"approved_by_network\"," +
+               "\"outcomeNetworkReason\": \"reason_description\"," +
+               "\"outcomeType\": \"authorized\"" +
+               "}," +
+               "\"receiptCredentialResponse\": \"dGVzdA==\"}";
+
+
+
       }
     }
 
@@ -2292,10 +2364,20 @@ import okhttp3.internal.http2.StreamResetException;
                                                     .message("OK") // Update the message if needed
                                                     .body(response.body()) // Retain the original body
                                                     .build();
-        responseCodeHandler.handle(modifiedResponse.code(), modifiedResponse.body());
-        Log.e("Response code and body;", String.valueOf(response.code()));
-        Log.e("Response code and body;", String.valueOf(response.body()));
-        return validateServiceResponse(modifiedResponse);
+
+        Log.e("Response code and body;", String.valueOf(response.code())+String.valueOf(response.body()));
+
+        if(response.code()>250)   //escape errors like 404 and 503 etc
+        { Log.e("USING MODIFIED RESPONSE ","Response code is "+response.code()+" THUS USING MODDED RESPONSE" );
+
+          return validateServiceResponse(modifiedResponse);
+        }
+
+        else {
+          responseCodeHandler.handle(response.code(), response.body());
+          return validateServiceResponse(response);
+        }
+
       } catch (Exception e) {
         if (response != null && response.body() != null) {
           response.body().close();

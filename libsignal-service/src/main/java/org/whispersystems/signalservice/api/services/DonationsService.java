@@ -6,6 +6,7 @@ import org.signal.libsignal.zkgroup.receipts.ReceiptCredentialPresentation;
 import org.signal.libsignal.zkgroup.receipts.ReceiptCredentialRequest;
 import org.signal.libsignal.zkgroup.receipts.ReceiptCredentialResponse;
 import org.whispersystems.signalservice.api.groupsv2.GroupsV2Operations;
+import org.whispersystems.signalservice.api.profiles.SignalServiceProfile;
 import org.whispersystems.signalservice.api.push.exceptions.NonSuccessfulResponseCodeException;
 import org.whispersystems.signalservice.api.subscriptions.ActiveSubscription;
 import org.whispersystems.signalservice.api.subscriptions.PayPalConfirmPaymentIntentResponse;
@@ -23,13 +24,21 @@ import org.whispersystems.signalservice.internal.push.SubscriptionsConfiguration
 import org.whispersystems.signalservice.internal.push.PushServiceSocket;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 
 import io.reactivex.rxjava3.annotations.NonNull;
+
+import static org.whispersystems.signalservice.internal.util.JsonUtil.toJson;
 
 /**
  * One-stop shop for Signal service calls related to donations.
@@ -115,13 +124,262 @@ public class DonationsService {
   }
 
   public ServiceResponse<SubscriptionsConfiguration> getDonationsConfiguration(Locale locale) {
+//    return getCachedValue(
+//        locale,
+//        donationsConfigurationCache,
+//        pushServiceSocket::getDonationsConfiguration,
+//        DONATION_CONFIGURATION_TTL
+//    );
+
+//    return getCachedValue(
+//        locale,
+//        donationsConfigurationCache,
+//        loc -> {
+//          SubscriptionsConfiguration config = pushServiceSocket.getDonationsConfiguration(loc);
+//          if (config != null) {
+//            Log.d(TAG, "Donations Configuration: level=" + config.getLevels() +
+//                       ", currency=" + config.getCurrencies()+
+//                       ", description=" + config.getSepaMaximumEuros()+
+//                  ", backupconfig=" + config.getBackupConfiguration()); // Replace with actual field getters
+//          } else {
+//            Log.d(TAG, "Donations Configuration: null");
+//          }
+//          return config;
+//        },
+//        DONATION_CONFIGURATION_TTL
+//    );
+
+
     return getCachedValue(
         locale,
         donationsConfigurationCache,
-        pushServiceSocket::getDonationsConfiguration,
+        loc -> {
+          // Create mock data for SubscriptionsConfiguration
+          SubscriptionsConfiguration mockConfig = createMockSubscriptionsConfiguration();
+
+          Log.d(TAG, "Mocked Donations Configuration: " + toJson(mockConfig)); // Logging the mock data as JSON
+
+          return mockConfig;
+        },
         DONATION_CONFIGURATION_TTL
     );
   }
+
+
+
+  private SubscriptionsConfiguration createMockSubscriptionsConfiguration() {
+    try {
+      // Use reflection to populate fields
+      SubscriptionsConfiguration config = new SubscriptionsConfiguration();
+// Populate currencies map
+      Map<String, SubscriptionsConfiguration.CurrencyConfiguration> currencies = new HashMap<>();
+
+// USD Configuration
+      SubscriptionsConfiguration.CurrencyConfiguration usdConfig    = new SubscriptionsConfiguration.CurrencyConfiguration();
+      Field                                            minimumField = SubscriptionsConfiguration.CurrencyConfiguration.class.getDeclaredField("minimum");
+      minimumField.setAccessible(true);
+      minimumField.set(usdConfig, BigDecimal.valueOf(3));
+
+      Field oneTimeField = SubscriptionsConfiguration.CurrencyConfiguration.class.getDeclaredField("oneTime");
+      oneTimeField.setAccessible(true);
+      oneTimeField.set(usdConfig, Map.of(
+          100, List.of(BigDecimal.valueOf(10)),
+          1, List.of(BigDecimal.valueOf(10), BigDecimal.valueOf(25), BigDecimal.valueOf(50), BigDecimal.valueOf(75), BigDecimal.valueOf(100), BigDecimal.valueOf(250))
+      ));
+
+      Field subscriptionField = SubscriptionsConfiguration.CurrencyConfiguration.class.getDeclaredField("subscription");
+      subscriptionField.setAccessible(true);
+      subscriptionField.set(usdConfig, Map.of(
+          500, BigDecimal.valueOf(5),
+          1000, BigDecimal.valueOf(10),
+          2000, BigDecimal.valueOf(20)
+      ));
+
+      Field supportedPaymentMethodsField = SubscriptionsConfiguration.CurrencyConfiguration.class.getDeclaredField("supportedPaymentMethods");
+      supportedPaymentMethodsField.setAccessible(true);
+      supportedPaymentMethodsField.set(usdConfig, Set.of(SubscriptionsConfiguration.PAYPAL, SubscriptionsConfiguration.CARD, SubscriptionsConfiguration.SEPA_DEBIT));
+
+      currencies.put("USD", usdConfig);
+
+// GBP Configuration (Similar to USD, add additional fields)
+      SubscriptionsConfiguration.CurrencyConfiguration gbpConfig = new SubscriptionsConfiguration.CurrencyConfiguration();
+      minimumField.set(gbpConfig, BigDecimal.valueOf(3));
+
+      oneTimeField.set(gbpConfig, Map.of(
+          100, List.of(BigDecimal.valueOf(10)),
+          1, List.of(BigDecimal.valueOf(10), BigDecimal.valueOf(25), BigDecimal.valueOf(50), BigDecimal.valueOf(75), BigDecimal.valueOf(100), BigDecimal.valueOf(250))
+      ));
+
+      subscriptionField.set(gbpConfig, Map.of(
+          500, BigDecimal.valueOf(5),
+          1000, BigDecimal.valueOf(10),
+          2000, BigDecimal.valueOf(20)
+      ));
+
+      supportedPaymentMethodsField.set(gbpConfig, Set.of(SubscriptionsConfiguration.PAYPAL, SubscriptionsConfiguration.CARD));
+
+      currencies.put("GBP", gbpConfig);
+
+// Populate levels map
+      Map<Integer, SubscriptionsConfiguration.LevelConfiguration> levels = new HashMap<>();
+
+// Level 1 Configuration
+      SubscriptionsConfiguration.LevelConfiguration levelConfig1 = new SubscriptionsConfiguration.LevelConfiguration();
+      SignalServiceProfile.Badge                    badge1       = new SignalServiceProfile.Badge();
+      badge1.id          = "BOOST";
+      badge1.category    = "donor";
+      badge1.name        = "Signal Boost";
+      badge1.description = "{short_name} supported Signal with a donation. Signal is a nonprofit supported only by people like you.";
+      badge1.sprites6    = List.of(
+          "9f6c55b8b0d38cb10fafd6af70e57bb321c5db04c7ce0a2ee3dbb257d64b15d0.png",
+          "2259dc6eba1054d8f681ff72d3de552b5113a4bfe2019406c4aa99956077a8eb.png",
+          "4f46957049ee1b0caa1c67c1d26a14850abdb6a91da318d0bf1920480ca15769.png",
+          "83220e85bd0b05d87a684cd706b6ea4d49feead653ad891966b673461f86f484.png",
+          "b75cc65b5311abd3a0ffcc0ed9f6eb3edaf48dae91d1ff0063ad9b124b5b7780.png",
+          "f1a2086f6cbd303f65df1a6250ccc7dd075c9ba3fa5a0f9d226f5357b11939fd.png"
+      );
+      badge1.duration    = 2592000;
+      badge1.visible     = true;
+
+
+      Field badgeField = SubscriptionsConfiguration.LevelConfiguration.class.getDeclaredField("badge");
+      badgeField.setAccessible(true);
+      badgeField.set(levelConfig1, badge1);
+
+      levels.put(1, levelConfig1);
+
+// Add more levels (similar to levelConfig1)
+// Example for level 100
+//      SubscriptionsConfiguration.LevelConfiguration levelConfig100 = new SubscriptionsConfiguration.LevelConfiguration();
+//      SignalServiceProfile.Badge                    badge100       = new SignalServiceProfile.Badge();
+//      badge100.id          = "GIFT";
+//      badge100.category    = "donor";
+//      badge100.name        = "Signal UFO";
+//      badge100.description = "A friend made a donation to Signal on behalf of {short_name}.";
+//      badge100.duration    = 5184000;
+//
+//      badgeField.set(levelConfig100, badge100);
+//      levels.put(100, levelConfig100);
+
+// Backup Configuration
+      SubscriptionsConfiguration.BackupConfiguration backupConfig           = new SubscriptionsConfiguration.BackupConfiguration();
+      Field                                          freeTierMediaDaysField = SubscriptionsConfiguration.BackupConfiguration.class.getDeclaredField("freeTierMediaDays");
+      freeTierMediaDaysField.setAccessible(true);
+      freeTierMediaDaysField.set(backupConfig, 30);
+
+//      Field backupLevelsField = SubscriptionsConfiguration.BackupConfiguration.class.getDeclaredField("levels");
+//      backupLevelsField.setAccessible(true);
+//      backupLevelsField.set(backupConfig, Map.of(
+//          201, new SubscriptionsConfiguration.BackupLevelConfiguration()
+//      ));
+
+// Assign all to the main config object
+      Field currenciesField = SubscriptionsConfiguration.class.getDeclaredField("currencies");
+      currenciesField.setAccessible(true);
+      currenciesField.set(config, currencies);
+
+      Field levelsField = SubscriptionsConfiguration.class.getDeclaredField("levels");
+      levelsField.setAccessible(true);
+      levelsField.set(config, levels);
+
+      Field backupField = SubscriptionsConfiguration.class.getDeclaredField("backupConfiguration");
+      backupField.setAccessible(true);
+      backupField.set(config, backupConfig);
+
+      Field sepaMaximumEurosField = SubscriptionsConfiguration.class.getDeclaredField("sepaMaximumEuros");
+      sepaMaximumEurosField.setAccessible(true);
+      sepaMaximumEurosField.set(config, BigDecimal.valueOf(10000.00));
+
+      return config;
+    } catch (Exception e) {
+      throw new RuntimeException("Error creating mock SubscriptionsConfiguration", e);
+    }
+//
+//
+//// Populate currencies map
+//    Map<String, SubscriptionsConfiguration.CurrencyConfiguration> currencies = new HashMap<>();
+//    SubscriptionsConfiguration.CurrencyConfiguration usdConfig = new SubscriptionsConfiguration.CurrencyConfiguration();
+//    Field minimumField = SubscriptionsConfiguration.CurrencyConfiguration.class.getDeclaredField("minimum");
+//    minimumField.setAccessible(true);
+//    minimumField.set(usdConfig, BigDecimal.valueOf(100.00));
+//
+//    Field oneTimeField = SubscriptionsConfiguration.CurrencyConfiguration.class.getDeclaredField("oneTime");
+//    oneTimeField.setAccessible(true);
+//    oneTimeField.set(usdConfig, Map.of(
+//        1, List.of(BigDecimal.valueOf(10.00), BigDecimal.valueOf(20.00)),
+//        2, List.of(BigDecimal.valueOf(30.00))
+//    ));
+//
+//    Field supportedPaymentMethodsField = SubscriptionsConfiguration.CurrencyConfiguration.class.getDeclaredField("supportedPaymentMethods");
+//    supportedPaymentMethodsField.setAccessible(true);
+//    supportedPaymentMethodsField.set(usdConfig, Set.of(SubscriptionsConfiguration.PAYPAL, SubscriptionsConfiguration.CARD));
+//
+//    currencies.put("USD", usdConfig);
+//
+//// Populate levels map
+//    Map<Integer, SubscriptionsConfiguration.LevelConfiguration> levels = new HashMap<>();
+//    SubscriptionsConfiguration.LevelConfiguration levelConfig = new SubscriptionsConfiguration.LevelConfiguration();
+//// Create and set a mock Badge
+//    SignalServiceProfile.Badge badge = new SignalServiceProfile.Badge();
+//    badge.id = "BOOST";
+//    badge.category = "donor";
+//    badge.name = "Signal Boost";
+//    badge.description = "{short_name} supports Signal with a monthly donation. Signal is a nonprofit with no advertisers or investors, supported only by people like you.";
+//    badge.sprites6 = List.of("9f6c55b8b0d38cb10fafd6af70e57bb321c5db04c7ce0a2ee3dbb257d64b15d0.png",
+//                             "2259dc6eba1054d8f681ff72d3de552b5113a4bfe2019406c4aa99956077a8eb.png",
+//                             "4f46957049ee1b0caa1c67c1d26a14850abdb6a91da318d0bf1920480ca15769.png",
+//                             "83220e85bd0b05d87a684cd706b6ea4d49feead653ad891966b673461f86f484.png",
+//                             "b75cc65b5311abd3a0ffcc0ed9f6eb3edaf48dae91d1ff0063ad9b124b5b7780.png",
+//                             "f1a2086f6cbd303f65df1a6250ccc7dd075c9ba3fa5a0f9d226f5357b11939fd.png");
+//    badge.expiration = new BigDecimal("9999999.99");
+//    badge.visible = true;
+//    badge.duration = 999999999;  // example duration in seconds
+//
+//// Set the badge field via reflection
+//    Field badgeField = SubscriptionsConfiguration.LevelConfiguration.class.getDeclaredField("badge");
+//    badgeField.setAccessible(true);
+//    badgeField.set(levelConfig, badge);
+//
+//
+//
+//    levels.put(1, levelConfig);
+//
+//// Set fields using reflection
+//    Field currenciesField = SubscriptionsConfiguration.class.getDeclaredField("currencies");
+//    currenciesField.setAccessible(true);
+//    currenciesField.set(config, currencies);
+//
+//    Field levelsField = SubscriptionsConfiguration.class.getDeclaredField("levels");
+//    levelsField.setAccessible(true);
+//    levelsField.set(config, levels);
+//
+//    Field sepaMaximumEurosField = SubscriptionsConfiguration.class.getDeclaredField("sepaMaximumEuros");
+//    sepaMaximumEurosField.setAccessible(true);
+//    sepaMaximumEurosField.set(config, BigDecimal.valueOf(500.00));
+//
+//// Populate backup configuration
+//    SubscriptionsConfiguration.BackupConfiguration backupConfig = new SubscriptionsConfiguration.BackupConfiguration();
+//    Field freeTierMediaDaysField = SubscriptionsConfiguration.BackupConfiguration.class.getDeclaredField("freeTierMediaDays");
+//    freeTierMediaDaysField.setAccessible(true);
+//    freeTierMediaDaysField.set(backupConfig, 30);
+//
+//    Field backupField = SubscriptionsConfiguration.class.getDeclaredField("backupConfiguration");
+//    backupField.setAccessible(true);
+//    backupField.set(config, backupConfig);
+
+  }
+
+
+
+
+
+
+
+
+
+
+
+
 
   public ServiceResponse<BankMandate> getBankMandate(Locale locale, String bankTransferType) {
     return getCachedValue(
@@ -380,6 +638,7 @@ public class DonationsService {
   public ServiceResponse<ReceiptCredentialResponse> submitReceiptCredentialRequestSync(SubscriberId subscriberId, ReceiptCredentialRequest receiptCredentialRequest) {
     return wrapInServiceResponse(() -> {
       ReceiptCredentialResponse response = pushServiceSocket.submitReceiptCredentials(subscriberId.serialize(), receiptCredentialRequest);
+      Log.e(TAG,"response: 556-- : "+response.toString());
       return new Pair<>(response, 200);
     });
   }

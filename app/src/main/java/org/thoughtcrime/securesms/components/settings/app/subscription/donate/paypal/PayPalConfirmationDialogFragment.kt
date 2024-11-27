@@ -60,8 +60,8 @@ class PayPalConfirmationDialogFragment : DialogFragment(R.layout.donation_webvie
     binding.webView.webViewClient = client
     binding.webView.settings.javaScriptEnabled = true
     binding.webView.settings.cacheMode = WebSettings.LOAD_NO_CACHE
-//    binding.webView.loadUrl(args.uri.toString())
-    binding.webView.loadUrl("https://signaldonations.org/return/onetime")
+    binding.webView.loadUrl(args.uri.toString())
+//    binding.webView.loadUrl("https://signaldonations.org/return/onetime")
 
     (requireDialog() as ComponentDialog).onBackPressedDispatcher.addCallback(
       viewLifecycleOwner,

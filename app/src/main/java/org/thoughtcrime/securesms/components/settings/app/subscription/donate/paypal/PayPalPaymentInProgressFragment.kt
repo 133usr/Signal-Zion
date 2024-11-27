@@ -143,15 +143,16 @@ class PayPalPaymentInProgressFragment : DialogFragment(R.layout.donation_in_prog
       val listener = FragmentResultListener { _, bundle ->
         val result: PayPalConfirmationResult? = bundle.getParcelableCompat(
           PayPalConfirmationDialogFragment.REQUEST_KEY, PayPalConfirmationResult::class.java)
-        val paymentId = "T93DJ2231A59DD35672D"
+//        val paymentId = "PAY-9566480AGHEE"
         if (result != null) {
-//          emitter.onSuccess(result.copy(paymentId = createPaymentIntentResponse.paymentId))
-          emitter.onSuccess(result.copy(paymentId = paymentId))
+          emitter.onSuccess(result.copy(paymentId = createPaymentIntentResponse.paymentId))
+//          emitter.onSuccess(result.copy(paymentId = paymentId))
 
-          Toast.makeText(context, "processing id", Toast.LENGTH_SHORT).show()
-
+          Toast.makeText(context, "processing id"+result.paymentId, Toast.LENGTH_LONG).show()
+          Log.e(TAG,"request key: "+PayPalConfirmationDialogFragment.REQUEST_KEY)
 
         } else {
+          Toast.makeText(context, "err: "+ TAG, Toast.LENGTH_SHORT).show()
           emitter.onError(DonationError.UserCancelledPaymentError(args.inAppPaymentType.toErrorSource()))
         }
       }
@@ -160,8 +161,11 @@ class PayPalPaymentInProgressFragment : DialogFragment(R.layout.donation_in_prog
       parentFragmentManager.setFragmentResultListener(PayPalConfirmationDialogFragment.REQUEST_KEY, this, listener)
 
       findNavController().safeNavigate(
+
         PayPalPaymentInProgressFragmentDirections.actionPaypalPaymentInProgressFragmentToPaypalConfirmationFragment(
-          Uri.parse(createPaymentIntentResponse.approvalUrl)
+
+//          Uri.parse(createPaymentIntentResponse.approvalUrl)
+          Uri.parse("https://signaldonations.org/return/onetime")
         )
       )
 

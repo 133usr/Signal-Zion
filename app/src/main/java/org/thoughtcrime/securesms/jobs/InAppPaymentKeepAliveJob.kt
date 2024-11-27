@@ -215,6 +215,18 @@ class InAppPaymentKeepAliveJob private constructor(
         info(type, "Old payment not found in database. Loading badge / label information from donations configuration.")
         val configuration = AppDependencies.donationsService.getDonationsConfiguration(Locale.getDefault())
         if (configuration.result.isPresent) {
+          val levels = configuration.result.get().levels
+          if (levels == null) {
+            Log.e("Error", "Levels map is null")
+            throw IllegalArgumentException("Subscription level is invalid.");
+          }
+
+          val subscriptionConfig1 = levels[subscription.level]
+          if (subscriptionConfig1 == null) {
+            Log.e("Error", "No configuration for subscription level: ${subscription.level}")
+            throw IllegalArgumentException("Subscription level is invalid.");
+          }
+
           val subscriptionConfig = configuration.result.get().levels[subscription.level]
           if (subscriptionConfig == null) {
             info(type, "Failed to load subscription configuration for level ${subscription.level} for type $type")

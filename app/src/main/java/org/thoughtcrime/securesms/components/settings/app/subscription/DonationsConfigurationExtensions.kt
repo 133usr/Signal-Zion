@@ -1,5 +1,6 @@
 package org.thoughtcrime.securesms.components.settings.app.subscription
 
+import org.signal.core.util.logging.Log
 import org.signal.core.util.money.FiatMoney
 import org.signal.core.util.money.PlatformCurrencyUtil
 import org.thoughtcrime.securesms.badges.Badges
@@ -83,6 +84,8 @@ fun SubscriptionsConfiguration.getBadge(level: Int): Badge {
 }
 
 fun SubscriptionsConfiguration.getSubscriptionLevels(): Map<Int, LevelConfiguration> {
+  Log.e("level debugging",""+ SUBSCRIPTION_LEVELS, null,true)
+
   return levels.filterKeys { SUBSCRIPTION_LEVELS.contains(it) }.toSortedMap()
 }
 

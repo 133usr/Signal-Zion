@@ -128,29 +128,28 @@ public class SignalServiceProfile {
   }
 
   public static class Badge {
+    @JsonProperty public String id;
+//todo ^^^^^^^^^^^^^^  changed from private to public
     @JsonProperty
-    private String id;
+    public String category;
 
     @JsonProperty
-    private String category;
+    public String name;
 
     @JsonProperty
-    private String name;
+    public String description;
 
     @JsonProperty
-    private String description;
+    public List<String> sprites6;
 
     @JsonProperty
-    private List<String> sprites6;
+    public BigDecimal expiration;
 
     @JsonProperty
-    private BigDecimal expiration;
+    public boolean visible;
 
     @JsonProperty
-    private boolean visible;
-
-    @JsonProperty
-    private long duration;
+    public long duration;
 
     public String getId() {
       return id;
