@@ -65,12 +65,22 @@ class ManageDonationsViewModel : ViewModel() {
     val activeSubscription: Single<ActiveSubscription> = RecurringInAppPaymentRepository.getActiveSubscription(InAppPaymentSubscriberRecord.Type.DONATION)
 
     disposables += Single.fromCallable {
+      val requiresCancel = InAppPaymentsRepository.getShouldCancelSubscriptionBeforeNextSubscribeAttempt(InAppPaymentSubscriberRecord.Type.DONATION)
+      Log.d(TAG, "requiresCancel value: $requiresCancel")
       InAppPaymentsRepository.getShouldCancelSubscriptionBeforeNextSubscribeAttempt(InAppPaymentSubscriberRecord.Type.DONATION)
-    }.subscribeOn(Schedulers.io()).subscribeBy { requiresCancel ->
-      store.update {
-        it.copy(subscriberRequiresCancel = requiresCancel)
-      }
     }
+      .subscribeOn(Schedulers.io()).subscribeBy(
+        onSuccess = { requiresCancel ->
+          Log.d(TAG, "requiresCancel value: $requiresCancel")
+          store.update { it.copy(subscriberRequiresCancel = requiresCancel) }
+        },
+        onError = { error ->
+          Log.e(TAG, "Error fetching subscription cancellation requirement", error)
+          store.update { it.copy(subscriberRequiresCancel = false) } // Default fallback
+        }
+      )
+
+
 
     disposables += Recipient.observable(Recipient.self().id).map { it.badges }.subscribeBy { badges ->
       store.update { state ->

@@ -143,16 +143,20 @@ public class DonationsService {
       synchronized (this) {
         CacheEntry<T> cacheEntryInLock = cachedValueReference.get();
         if (isNewCacheEntryRequired(cacheEntryInLock, locale)) {
+          Log.e(TAG,"-------------- RETURN WRAPINSERVICERESPONSE 1 ---------------:");
           return wrapInServiceResponse(() -> {
             T value = cacheEntryValueProducer.produce(locale);
             cachedValueReference.set(new CacheEntry<>(value, System.currentTimeMillis() + cacheTTL, locale));
+            Log.e(TAG,"-------------- New Pair value ---------------:" +new Pair<>(value,200));
             return new Pair<>(value, 200);
           });
         } else {
+          Log.e(TAG,"-------------- RETURN WRAPINSERVICERESPONSE 2 ---------------:");
           return wrapInServiceResponse(() -> new Pair<>(cacheEntryInLock.cachedValue, 200));
         }
       }
     } else {
+      Log.e(TAG,"-------------- RETURN WRAPINSERVICERESPONSE 3 ---------------:");
       return wrapInServiceResponse(() -> new Pair<>(cacheEntryOutsideLock.cachedValue, 200));
     }
   }
@@ -387,6 +391,7 @@ public class DonationsService {
   private <T> ServiceResponse<T> wrapInServiceResponse(Producer<T> producer) {
     try {
       Pair<T, Integer> responseAndCode = producer.produce();
+      Log.e(TAG,"-------###------- RESPONSE CODE FIRST AND SECOND ---------------:");
       return ServiceResponse.forResult(responseAndCode.first(), responseAndCode.second(), null);
     } catch (NonSuccessfulResponseCodeException e) {
       Log.w(TAG, "Bad response code from server.", e);

@@ -444,7 +444,7 @@ class DonateToSignalFragment :
     animationView.translationX = viewHorizontalCenter - animationHorizontalCenter
 
     animationView.playAnimation()
-onPaymentComplete(mockInAppPayment)
+//onPaymentComplete(mockInAppPayment)
     viewProjection.release()
     animationProjection.release()
   }

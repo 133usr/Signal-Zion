@@ -101,12 +101,12 @@ class InAppPaymentCheckoutDelegate(
       handleDonationProcessorActionResult(result)
     }
 
-    MaterialAlertDialogBuilder(fragment.requireContext())
-      .setTitle("Trying to get a badge")
-      .setMessage("Cross your fingers!!")
-      .setPositiveButton(android.R.string.ok) { _, _ ->
-        callback.onPaymentComplete(mockResult.inAppPayment!!)
-      }.show()
+//    MaterialAlertDialogBuilder(fragment.requireContext())
+//      .setTitle("Trying to get a badge")
+//      .setMessage("Cross your fingers!!")
+//      .setPositiveButton(android.R.string.ok) { _, _ ->
+//        callback.onPaymentComplete(mockResult.inAppPayment!!)
+//      }.show()
   }
 
   fun handleGatewaySelectionResponse(inAppPayment: InAppPaymentTable.InAppPayment) {
