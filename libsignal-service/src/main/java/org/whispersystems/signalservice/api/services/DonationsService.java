@@ -36,6 +36,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 
+import javax.naming.Context;
+
 import io.reactivex.rxjava3.annotations.NonNull;
 
 import static org.whispersystems.signalservice.internal.util.JsonUtil.toJson;
@@ -636,7 +638,12 @@ public class DonationsService {
   }
 
   public ServiceResponse<ReceiptCredentialResponse> submitReceiptCredentialRequestSync(SubscriberId subscriberId, ReceiptCredentialRequest receiptCredentialRequest) {
+    Log.e("Donation Service","Step 3 for validation");
+    Log.e("Donation Service","Step 3 for validation");
     return wrapInServiceResponse(() -> {
+
+      Log.e(TAG,"submitReceiptCredentialRequestSync 9600: "+subscriberId.serialize().toString());
+      Log.e(TAG,"submitReceiptCredentialRequestSync 9601: "+receiptCredentialRequest.toString());
       ReceiptCredentialResponse response = pushServiceSocket.submitReceiptCredentials(subscriberId.serialize(), receiptCredentialRequest);
       Log.e(TAG,"response: 556-- : "+response.toString());
       return new Pair<>(response, 200);
@@ -644,6 +651,7 @@ public class DonationsService {
   }
 
   private <T> ServiceResponse<T> wrapInServiceResponse(Producer<T> producer) {
+
     try {
       Pair<T, Integer> responseAndCode = producer.produce();
       return ServiceResponse.forResult(responseAndCode.first(), responseAndCode.second(), null);

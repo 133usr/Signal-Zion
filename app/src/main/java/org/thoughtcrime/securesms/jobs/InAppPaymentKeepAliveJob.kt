@@ -217,13 +217,13 @@ class InAppPaymentKeepAliveJob private constructor(
         if (configuration.result.isPresent) {
           val levels = configuration.result.get().levels
           if (levels == null) {
-            Log.e("Error", "Levels map is null")
+            Log.e(TAG, "Levels map is null")
             throw IllegalArgumentException("Subscription level is invalid.");
           }
 
           val subscriptionConfig1 = levels[subscription.level]
           if (subscriptionConfig1 == null) {
-            Log.e("Error", "No configuration for subscription level: ${subscription.level}")
+            Log.e(TAG, "No configuration for subscription level: ${subscription.level}")
             throw IllegalArgumentException("Subscription level is invalid.");
           }
 

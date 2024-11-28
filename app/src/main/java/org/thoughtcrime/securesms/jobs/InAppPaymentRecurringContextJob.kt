@@ -187,7 +187,8 @@ warning( "ActiveSub"+subscription)
     } else {
       inAppPayment
     }
-
+    Log.e(TAG,"Step 1 for validation..");
+    Log.e(TAG,"Step 1 for validation....");
     submitAndValidateCredentials(updatedInAppPayment, subscription, requestContext)
   }
 
@@ -385,6 +386,9 @@ warning( "ActiveSub"+subscription)
     subscription: Subscription,
     requestContext: ReceiptCredentialRequestContext
   ) {
+    Log.e(TAG,"Step 2 for validation..");
+    Log.e(TAG,"Step 2 for validation....");
+
     info("Submitting receipt credential request")
     val response: ServiceResponse<ReceiptCredentialResponse> = AppDependencies.donationsService.submitReceiptCredentialRequestSync(inAppPayment.subscriberId!!, requestContext.request)
 

@@ -1533,6 +1533,7 @@ import okhttp3.internal.http2.StreamResetException;
 
     public ReceiptCredentialResponse submitReceiptCredentials(String subscriptionId, ReceiptCredentialRequest receiptCredentialRequest) throws IOException {
       String payload  = JsonUtil.toJson(new ReceiptCredentialRequestJson(receiptCredentialRequest));
+      Log.e(TAG,"Payload is :  "+payload);
       String response = makeServiceRequestWithoutAuthentication(
           String.format(SUBSCRIPTION_RECEIPT_CREDENTIALS, subscriptionId),
           "POST",
@@ -2388,6 +2389,7 @@ import okhttp3.internal.http2.StreamResetException;
 
     private Response validateServiceResponse(Response response)
         throws NonSuccessfulResponseCodeException, PushNetworkException, MalformedResponseException {
+      Log.e("ValidateServiceReponse","Verifying response now");
       int    responseCode    = response.code();
       String responseMessage = response.message();
 

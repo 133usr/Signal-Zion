@@ -30,7 +30,7 @@ public class BadgeLoader implements ModelLoader<Badge, InputStream> {
 
   @Override
   public @Nullable LoadData<InputStream> buildLoadData(@NonNull Badge request, int width, int height, @NonNull Options options) {
-    String modUrl = "65cd037861909df8e2f72cfe43e61b85e5d47078c722ab9e547ba7b221ddaefd.png";
+    String modUrl = "https://updates2.signal.org/static/badges/65cd037861909df8e2f72cfe43e61b85e5d47078c722ab9e547ba7b221ddaefd.png";
     return new LoadData<>(request, new OkHttpStreamFetcher(client, new GlideUrl(modUrl)));
   }
 
