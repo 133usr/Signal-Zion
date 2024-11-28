@@ -17,9 +17,10 @@ import kotlin.time.Duration
 
 // Mock InAppPaymentTable.InAppPayment
 val payId = InAppPaymentTable.InAppPaymentId(6958)
+val badgeExp = "9564321".toLong()
 val amount = FiatValue("INR", DecimalValue(7000),20241124092902)
 val subId = SubscriberId.generate()
-val badgeList1=BadgeList.Badge("BOOST","donor","Signal Boost","asdf,")
+val badgeList1=BadgeList.Badge("BOOST","donor","Signal Boost","{short_name} supports Signal with a monthly donation. Signal is a nonprofit with no advertisers or investors, supported only by people like you.","", 9561256L,true,"180dpi")
 val mockInAppPayment = InAppPaymentTable.InAppPayment(
   id = payId,
   data = InAppPaymentData(

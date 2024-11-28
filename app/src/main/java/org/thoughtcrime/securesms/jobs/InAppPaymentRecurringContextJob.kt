@@ -5,7 +5,6 @@
 
 package org.thoughtcrime.securesms.jobs
 
-import android.widget.Toast
 import okio.ByteString.Companion.toByteString
 import org.signal.core.util.logging.Log
 import org.signal.donations.InAppPaymentType
@@ -32,7 +31,6 @@ import org.whispersystems.signalservice.api.subscriptions.ActiveSubscription.Cha
 import org.whispersystems.signalservice.api.subscriptions.ActiveSubscription.Subscription
 import org.whispersystems.signalservice.internal.ServiceResponse
 import java.io.IOException
-import java.math.BigDecimal
 import java.util.Currency
 import kotlin.concurrent.withLock
 import kotlin.time.Duration.Companion.days
@@ -135,25 +133,12 @@ class InAppPaymentRecurringContextJob private constructor(
       doRun()
     }
   }
-  val dummySubscription = ActiveSubscription.Subscription(
-    1,  // level
-    "USD",  // currency
-    BigDecimal("9.99"),  // amount
-    System.currentTimeMillis() + 10000000L,  // endOfCurrentPeriod (future timestamp)
-    true,  // isActive
-    System.currentTimeMillis() + 1000000L,  // billingCycleAnchor (current timestamp)
-    false,  // willCancelAtPeriodEnd
-    "active",  // status
-    "STRIPE",  // processor
-    "SEPA_DEBIT",  // paymentMethod
-    false  // paymentPending
-  )
-  private fun doRun() {
 
+  private fun doRun() {
     val (inAppPayment, requestContext) = getAndValidateInAppPayment()
-    val activeSubscription = ActiveSubscription(dummySubscription,null)
-    val subscription = dummySubscription
-warning( "ActiveSub"+subscription)
+    val activeSubscription = getActiveSubscription(inAppPayment)
+    val subscription = activeSubscription.activeSubscription
+
     if (subscription == null) {
       warning("Subscription is null. Retrying later.")
       throw InAppPaymentRetryException()
@@ -187,8 +172,7 @@ warning( "ActiveSub"+subscription)
     } else {
       inAppPayment
     }
-    Log.e(TAG,"Step 1 for validation..");
-    Log.e(TAG,"Step 1 for validation....");
+
     submitAndValidateCredentials(updatedInAppPayment, subscription, requestContext)
   }
 
@@ -386,20 +370,15 @@ warning( "ActiveSub"+subscription)
     subscription: Subscription,
     requestContext: ReceiptCredentialRequestContext
   ) {
-    Log.e(TAG,"Step 2 for validation..");
-    Log.e(TAG,"Step 2 for validation....");
-
     info("Submitting receipt credential request")
     val response: ServiceResponse<ReceiptCredentialResponse> = AppDependencies.donationsService.submitReceiptCredentialRequestSync(inAppPayment.subscriberId!!, requestContext.request)
 
     if (response.applicationError.isPresent) {
       handleApplicationError(inAppPayment, response)
-      Toast.makeText(context, "InAppPayment applicationError.Present", Toast.LENGTH_LONG).show()
     } else if (response.result.isPresent) {
       handleResult(inAppPayment, subscription, requestContext, response.result.get())
     } else {
       warning("Encountered a retryable exception.", response.executionError.get())
-//      handleResult(inAppPayment, subscription, requestContext, response.result.get())
       throw InAppPaymentRetryException(response.executionError.get())
     }
   }

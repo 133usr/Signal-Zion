@@ -233,10 +233,6 @@ public class ApplicationContext extends Application implements AppForegroundObse
     Log.d(TAG, "onCreate() took " + (System.currentTimeMillis() - startTime) + " ms");
     SignalLocalMetrics.ColdStart.onApplicationCreateFinished();
     Tracer.getInstance().end("Application#onCreate()");
-
-
-    
-
   }
 
   @Override

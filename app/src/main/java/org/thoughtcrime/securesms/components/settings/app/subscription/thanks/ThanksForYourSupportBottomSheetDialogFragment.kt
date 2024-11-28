@@ -8,6 +8,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.core.text.method.LinkMovementMethodCompat
 import com.airbnb.lottie.LottieAnimationView
@@ -137,12 +138,14 @@ class ThanksForYourSupportBottomSheetDialogFragment : FixedRoundedCornerBottomSh
     if (controlState == ControlState.DISPLAY) {
       badgeRepository.setVisibilityForAllBadges(controlChecked).subscribeBy(
         onError = {
+          Toast.makeText(context, "Failure while updating badge visibility", Toast.LENGTH_SHORT).show()
           Log.w(TAG, "Failure while updating badge visibility", it)
         }
       )
     } else if (controlChecked) {
       badgeRepository.setFeaturedBadge(args.badge).subscribeBy(
         onError = {
+          Toast.makeText(context, "Failure while updating featured badge", Toast.LENGTH_SHORT).show()
           Log.w(TAG, "Failure while updating featured badge", it)
         }
       )

@@ -2,6 +2,7 @@ package org.thoughtcrime.securesms.badges
 
 import android.content.Context
 import android.util.AttributeSet
+import android.widget.Toast
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.core.content.res.use
 import com.bumptech.glide.Glide
@@ -71,7 +72,14 @@ class BadgeImageView @JvmOverloads constructor(
   }
 
   fun setBadge(badge: Badge?, requestManager: RequestManager) {
+
+
     if (badge != null) {
+//      Toast.makeText(context, "imgdensit"+badge?.imageDensity, Toast.LENGTH_SHORT).show()
+//      Toast.makeText(context, "boost"+badge?.isBoost(), Toast.LENGTH_SHORT).show()
+//      Toast.makeText(context, "id"+badge?.id, Toast.LENGTH_SHORT).show()
+//      Toast.makeText(context, "exp"+badge?.expirationTimestamp, Toast.LENGTH_SHORT).show()
+
       requestManager
         .load(badge)
         .downsample(DownsampleStrategy.NONE)

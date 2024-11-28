@@ -9,7 +9,6 @@ import com.bumptech.glide.load.model.ModelLoader;
 import com.bumptech.glide.load.model.ModelLoaderFactory;
 import com.bumptech.glide.load.model.MultiModelLoaderFactory;
 
-import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.badges.models.Badge;
 import org.thoughtcrime.securesms.dependencies.AppDependencies;
 
@@ -30,8 +29,7 @@ public class BadgeLoader implements ModelLoader<Badge, InputStream> {
 
   @Override
   public @Nullable LoadData<InputStream> buildLoadData(@NonNull Badge request, int width, int height, @NonNull Options options) {
-    String modUrl = "https://updates2.signal.org/static/badges/65cd037861909df8e2f72cfe43e61b85e5d47078c722ab9e547ba7b221ddaefd.png";
-    return new LoadData<>(request, new OkHttpStreamFetcher(client, new GlideUrl(modUrl)));
+    return new LoadData<>(request, new OkHttpStreamFetcher(client, new GlideUrl(request.getImageUrl().toString())));
   }
 
   @Override

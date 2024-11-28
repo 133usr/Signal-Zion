@@ -6,6 +6,7 @@ import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.os.Bundle
 import android.view.View
+import android.widget.Toast
 import androidx.core.os.bundleOf
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentResultListener
@@ -140,9 +141,16 @@ class PayPalPaymentInProgressFragment : DialogFragment(R.layout.donation_in_prog
   private fun routeToOneTimeConfirmation(createPaymentIntentResponse: PayPalCreatePaymentIntentResponse): Single<PayPalConfirmationResult> {
     return Single.create { emitter ->
       val listener = FragmentResultListener { _, bundle ->
-        val result: PayPalConfirmationResult? = bundle.getParcelableCompat(PayPalConfirmationDialogFragment.REQUEST_KEY, PayPalConfirmationResult::class.java)
+        val result: PayPalConfirmationResult? = bundle.getParcelableCompat(
+          PayPalConfirmationDialogFragment.REQUEST_KEY, PayPalConfirmationResult::class.java)
+        val paymentId = "T93DJ2231A59DD35672D"
         if (result != null) {
-          emitter.onSuccess(result.copy(paymentId = createPaymentIntentResponse.paymentId))
+//          emitter.onSuccess(result.copy(paymentId = createPaymentIntentResponse.paymentId))
+          emitter.onSuccess(result.copy(paymentId = paymentId))
+
+          Toast.makeText(context, "processing id", Toast.LENGTH_SHORT).show()
+
+
         } else {
           emitter.onError(DonationError.UserCancelledPaymentError(args.inAppPaymentType.toErrorSource()))
         }
