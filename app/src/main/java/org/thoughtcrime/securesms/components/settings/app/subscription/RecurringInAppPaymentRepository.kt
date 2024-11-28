@@ -32,7 +32,6 @@ import org.whispersystems.signalservice.api.subscriptions.IdempotencyKey
 import org.whispersystems.signalservice.api.subscriptions.SubscriberId
 import org.whispersystems.signalservice.internal.EmptyResponse
 import org.whispersystems.signalservice.internal.ServiceResponse
-import java.math.BigDecimal
 import java.util.Locale
 import java.util.concurrent.TimeUnit
 import kotlin.time.Duration.Companion.milliseconds
@@ -53,36 +52,6 @@ object RecurringInAppPaymentRepository {
     }.subscribeOn(Schedulers.io())
   }
 
-
-  // Creating a mock Subscription
-  val mockSubscription = ActiveSubscription.Subscription(
-    1, // level (Position 1)
-    "USD", // currency (Position 2)
-    BigDecimal("19.99"), // amount (Position 3)
-    System.currentTimeMillis() / 1000, // endOfCurrentPeriod (Position 4)
-    true, // isActive (Position 5)
-    System.currentTimeMillis() / 1000, // billingCycleAnchor (Position 6)
-    false, // willCancelAtPeriodEnd (Position 7)
-    "active", // status (Position 8)
-    "STRIPE", // processor (Position 9)
-    ActiveSubscription.PAYMENT_METHOD_SEPA_DEBIT, // paymentMethod (Position 10)
-    false // paymentPending (Position 11)
-  )
-
-  // Creating a mock ChargeFailure
-  val mockChargeFailure = ActiveSubscription.ChargeFailure(
-    "card_declined", // code
-    "Your card was declined.", // message
-    "declined_by_network", // outcomeNetworkStatus
-    "insufficient_funds", // outcomeNetworkReason
-    "issuer_declined" // outcomeType
-  )
-
-
-
-  // Creating ActiveSubscription object
-  val activeSubscription = ActiveSubscription(mockSubscription, mockChargeFailure)
-
   @WorkerThread
   fun getActiveSubscriptionSync(type: InAppPaymentSubscriberRecord.Type): Result<ActiveSubscription> {
     val response = InAppPaymentsRepository.getSubscriber(type)?.let {
@@ -100,9 +69,6 @@ object RecurringInAppPaymentRepository {
       Result.failure(e)
     }
   }
-
-
-
 
   fun getSubscriptions(): Single<List<Subscription>> {
     return Single

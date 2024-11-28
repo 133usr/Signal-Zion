@@ -8,7 +8,6 @@ import android.view.View
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import android.widget.Toast
 import androidx.activity.ComponentDialog
 import androidx.core.os.bundleOf
 import androidx.fragment.app.DialogFragment
@@ -48,9 +47,6 @@ class PayPalConfirmationDialogFragment : DialogFragment(R.layout.donation_webvie
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     setStyle(STYLE_NO_FRAME, R.style.Signal_DayNight_Dialog_FullScreen)
-    Toast.makeText(context, "webview running", Toast.LENGTH_SHORT).show()
-
-
   }
 
   @SuppressLint("SetJavaScriptEnabled")
@@ -61,7 +57,6 @@ class PayPalConfirmationDialogFragment : DialogFragment(R.layout.donation_webvie
     binding.webView.settings.javaScriptEnabled = true
     binding.webView.settings.cacheMode = WebSettings.LOAD_NO_CACHE
     binding.webView.loadUrl(args.uri.toString())
-//    binding.webView.loadUrl("https://signaldonations.org/return/onetime")
 
     (requireDialog() as ComponentDialog).onBackPressedDispatcher.addCallback(
       viewLifecycleOwner,
@@ -74,11 +69,9 @@ class PayPalConfirmationDialogFragment : DialogFragment(R.layout.donation_webvie
 
   override fun onDismiss(dialog: DialogInterface) {
     super.onDismiss(dialog)
-//    val result = this.result
-//    this.result = null
-Log.e("DISMISS_WEBVIEW","webview is dismissed now OnDismiss 879")
+    val result = this.result
+    this.result = null
     setFragmentResult(REQUEST_KEY, result ?: Bundle())
-
   }
 
   private inner class PayPalWebClient : WebViewClient(), DefaultLifecycleObserver {
@@ -107,35 +100,25 @@ Log.e("DISMISS_WEBVIEW","webview is dismissed now OnDismiss 879")
       }
 
       if (url?.startsWith(PayPalRepository.ONE_TIME_RETURN_URL) == true) {
-//        val confirmationResult = PayPalConfirmationResult.fromUrl(url)
-        val confirmationResult = PayPalConfirmationResult(
-          payerId = "9ASDFE19564PEKOSIL",
-          paymentId = "PAY-9566480AGHEE",
-          paymentToken = "EC-PSLEJ9564258762"
-        )
-
+        val confirmationResult = PayPalConfirmationResult.fromUrl(url)
         if (confirmationResult != null) {
           Log.d(TAG, "Setting confirmation result on request key...")
           result = bundleOf(REQUEST_KEY to confirmationResult)
-//          result = bundleOf(REQUEST_KEY to true)
         } else {
           Log.w(TAG, "One-Time return URL was missing a required parameter.", false)
-          result = bundleOf(REQUEST_KEY to confirmationResult)
+          result = null
         }
         isFinished = true
         dismissAllowingStateLoss()
-      }
-//      else if (url?.startsWith(PayPalRepository.CANCEL_URL) == true) {
-//        Log.d(TAG, "User cancelled.")
-//        result = null
-//        isFinished = true
-//        dismissAllowingStateLoss()
-//      }
-      else if (url?.startsWith(PayPalRepository.MONTHLY_RETURN_URL) == true) {
+      } else if (url?.startsWith(PayPalRepository.CANCEL_URL) == true) {
+        Log.d(TAG, "User cancelled.")
+        result = null
+        isFinished = true
+        dismissAllowingStateLoss()
+      } else if (url?.startsWith(PayPalRepository.MONTHLY_RETURN_URL) == true) {
         Log.d(TAG, "User confirmed monthly subscription.")
         result = bundleOf(REQUEST_KEY to true)
         isFinished = true
-
         dismissAllowingStateLoss()
       }
     }

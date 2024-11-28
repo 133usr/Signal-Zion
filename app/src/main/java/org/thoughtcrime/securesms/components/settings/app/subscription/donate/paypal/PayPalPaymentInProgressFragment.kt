@@ -6,7 +6,6 @@ import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.os.Bundle
 import android.view.View
-import android.widget.Toast
 import androidx.core.os.bundleOf
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentResultListener
@@ -141,18 +140,10 @@ class PayPalPaymentInProgressFragment : DialogFragment(R.layout.donation_in_prog
   private fun routeToOneTimeConfirmation(createPaymentIntentResponse: PayPalCreatePaymentIntentResponse): Single<PayPalConfirmationResult> {
     return Single.create { emitter ->
       val listener = FragmentResultListener { _, bundle ->
-        val result: PayPalConfirmationResult? = bundle.getParcelableCompat(
-          PayPalConfirmationDialogFragment.REQUEST_KEY, PayPalConfirmationResult::class.java)
-//        val paymentId = "PAY-9566480AGHEE"
+        val result: PayPalConfirmationResult? = bundle.getParcelableCompat(PayPalConfirmationDialogFragment.REQUEST_KEY, PayPalConfirmationResult::class.java)
         if (result != null) {
           emitter.onSuccess(result.copy(paymentId = createPaymentIntentResponse.paymentId))
-//          emitter.onSuccess(result.copy(paymentId = paymentId))
-
-          Toast.makeText(context, "processing id"+result.paymentId, Toast.LENGTH_LONG).show()
-          Log.e(TAG,"request key: "+PayPalConfirmationDialogFragment.REQUEST_KEY)
-
         } else {
-          Toast.makeText(context, "err: "+ TAG, Toast.LENGTH_SHORT).show()
           emitter.onError(DonationError.UserCancelledPaymentError(args.inAppPaymentType.toErrorSource()))
         }
       }
@@ -161,11 +152,8 @@ class PayPalPaymentInProgressFragment : DialogFragment(R.layout.donation_in_prog
       parentFragmentManager.setFragmentResultListener(PayPalConfirmationDialogFragment.REQUEST_KEY, this, listener)
 
       findNavController().safeNavigate(
-
         PayPalPaymentInProgressFragmentDirections.actionPaypalPaymentInProgressFragmentToPaypalConfirmationFragment(
-
-//          Uri.parse(createPaymentIntentResponse.approvalUrl)
-          Uri.parse("https://signaldonations.org/return/onetime")
+          Uri.parse(createPaymentIntentResponse.approvalUrl)
         )
       )
 

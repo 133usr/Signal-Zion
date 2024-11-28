@@ -1,7 +1,6 @@
 package org.thoughtcrime.securesms.util;
 
 import android.content.Context;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -51,16 +50,12 @@ import org.whispersystems.signalservice.internal.ServiceResponse;
 import org.whispersystems.signalservice.internal.push.PaymentAddress;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 import io.reactivex.rxjava3.core.Single;
-
-import static com.fasterxml.jackson.databind.type.LogicalType.Array;
 
 /**
  * Aids in the retrieval and decryption of profiles.
@@ -357,16 +352,12 @@ public final class ProfileUtil {
                                   .filter(Badge::getVisible)
                                   .map(Badge::getId)
                                   .collect(Collectors.toList());
-     badgeIds = new ArrayList<>(Arrays.asList("BOOST", "BOOST"));
 
-
-        Log.d(TAG, "Uploading " + (!profileName.isEmpty() ? "non-" : "") + "empty profile name.");
+    Log.d(TAG, "Uploading " + (!profileName.isEmpty() ? "non-" : "") + "empty profile name.");
     Log.d(TAG, "Uploading " + (!Util.isEmpty(about) ? "non-" : "") + "empty about.");
     Log.d(TAG, "Uploading " + (!Util.isEmpty(aboutEmoji) ? "non-" : "") + "empty emoji.");
     Log.d(TAG, "Uploading " + (paymentsAddress != null ? "non-" : "") + "empty payments address.");
-    Log.e(TAG, "Uploading " + ((!badgeIds.isEmpty()) ? "non-" : "") + "empty badge list.");
-
-
+    Log.d(TAG, "Uploading " + ((!badgeIds.isEmpty()) ? "non-" : "") + "empty badge list.");
 
     if (avatar.keepTheSame) {
       Log.d(TAG, "Leaving avatar unchanged. We think we " + (avatar.hasAvatar ? "" : "do not ") + "have one.");

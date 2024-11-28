@@ -587,10 +587,8 @@ public class DonationsService {
   {
     return wrapInServiceResponse(() -> {
       PayPalConfirmPaymentIntentResponse response = pushServiceSocket.confirmPayPalOneTimePaymentIntent(currency, amount, level, payerId, paymentId, paymentToken);
-      Log.e("Response code in donation servie;", String.valueOf(response));
       return new Pair<>(response, 200);
     });
-
   }
 
   /**
