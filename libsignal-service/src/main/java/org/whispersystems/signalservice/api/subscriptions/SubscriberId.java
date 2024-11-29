@@ -19,7 +19,7 @@ public final class SubscriberId {
 
   private final byte[] bytes;
 
-  private SubscriberId(byte[] bytes) {
+  public SubscriberId(byte[] bytes) {
     this.bytes = bytes;
   }
 

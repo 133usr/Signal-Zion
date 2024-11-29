@@ -20,6 +20,7 @@ import com.bumptech.glide.Glide
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import org.signal.core.util.concurrent.LifecycleDisposable
+import org.signal.core.util.logging.Log
 import org.thoughtcrime.securesms.AvatarPreviewActivity
 import org.thoughtcrime.securesms.LoggingFragment
 import org.thoughtcrime.securesms.R
@@ -29,6 +30,7 @@ import org.thoughtcrime.securesms.avatar.picker.AvatarPickerFragment
 import org.thoughtcrime.securesms.badges.models.Badge
 import org.thoughtcrime.securesms.badges.self.none.BecomeASustainerFragment.Companion.show
 import org.thoughtcrime.securesms.components.emoji.EmojiUtil
+import org.thoughtcrime.securesms.components.settings.conversation.preferences.AvatarPreference
 import org.thoughtcrime.securesms.databinding.EditProfileFragmentBinding
 import org.thoughtcrime.securesms.keyvalue.AccountValues
 import org.thoughtcrime.securesms.keyvalue.SignalStore
@@ -313,11 +315,14 @@ class EditProfileFragment : LoggingFragment() {
       }
     }
   }
-
+val TAG = "editprofilefrag"
   private fun presentBadge(badge: Optional<Badge>) {
     if (badge.isPresent && badge.get().visible && !badge.get().isExpired()) {
+      Log.e(TAG,"-------------- SET BADGE : EDITPROFFRAG---------------:");
       binding.manageProfileBadge.setBadge(badge.orElse(null))
     } else {
+
+//      Log.e(TAG,"-------------- SET BADGE TO NULL EDITPROFFRAG---------------visible: "+badge.get().visible+" isexp: "+badge.get().isExpired()+" is Present: ");
       binding.manageProfileBadge.setBadge(null)
     }
 

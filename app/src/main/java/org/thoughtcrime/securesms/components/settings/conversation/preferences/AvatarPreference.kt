@@ -2,6 +2,7 @@ package org.thoughtcrime.securesms.components.settings.conversation.preferences
 
 import android.view.View
 import androidx.core.view.ViewCompat
+import org.signal.core.util.logging.Log
 import org.thoughtcrime.securesms.R
 import org.thoughtcrime.securesms.avatar.view.AvatarView
 import org.thoughtcrime.securesms.badges.BadgeImageView
@@ -22,7 +23,7 @@ object AvatarPreference {
   fun register(adapter: MappingAdapter) {
     adapter.registerFactory(Model::class.java, LayoutFactory(::ViewHolder, R.layout.conversation_settings_avatar_preference_item))
   }
-
+  val  TAG = "avatar pref"
   class Model(
     val recipient: Recipient,
     val storyViewState: StoryViewState,
@@ -52,6 +53,7 @@ object AvatarPreference {
     override fun bind(model: Model) {
       if (model.recipient.isSelf) {
         badge.setBadge(null)
+        Log.e(TAG,"-------------- SET BADGE TO NULL AVATPREF---------------:");
         badge.setOnClickListener(null)
       } else {
         badge.setBadgeFromRecipient(model.recipient)

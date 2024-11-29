@@ -29,6 +29,7 @@ import org.thoughtcrime.securesms.components.settings.app.subscription.InAppDona
 import org.thoughtcrime.securesms.components.settings.app.subscription.InAppPaymentComponent
 import org.thoughtcrime.securesms.components.settings.app.subscription.InAppPaymentsRepository
 import org.thoughtcrime.securesms.components.settings.app.subscription.InAppPaymentsRepository.toPaymentSourceType
+import org.thoughtcrime.securesms.components.settings.app.subscription.donate.DonateToSignalFragment.Companion
 import org.thoughtcrime.securesms.components.settings.app.subscription.donate.card.CreditCardFragment
 import org.thoughtcrime.securesms.components.settings.app.subscription.donate.paypal.PayPalPaymentInProgressFragment
 import org.thoughtcrime.securesms.components.settings.app.subscription.donate.stripe.StripePaymentInProgressFragment
@@ -41,6 +42,10 @@ import org.thoughtcrime.securesms.database.InAppPaymentTable
 import org.thoughtcrime.securesms.database.SignalDatabase
 import org.thoughtcrime.securesms.database.model.databaseprotos.InAppPaymentData
 import org.thoughtcrime.securesms.util.fragments.requireListener
+import org.whispersystems.signalservice.api.subscriptions.SubscriberId
+import kotlin.time.Duration.Companion.hours
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
 /**
  * Abstracts out some common UI-level interactions between gift flow and normal donate flow.
@@ -139,13 +144,45 @@ class InAppPaymentCheckoutDelegate(
 
   private fun handleSuccessfulDonationProcessorActionResult(result: InAppPaymentProcessorActionResult) {
     setActivityResult(result.action, result.inAppPaymentType)
-
+    Log.e(TAG,"PAYMENTTYPE: ${result.inAppPaymentType}");
     if (result.action == InAppPaymentProcessorAction.CANCEL_SUBSCRIPTION) {
+      Log.e(TAG,"CANCELLED SUBSCRIPTION");
       callback.onSubscriptionCancelled(result.inAppPaymentType)
     } else {
-      Log.e(TAG,"-------------- PAYMENT IS NOW COMPLETE ---------------:");
-      callback.onPaymentComplete(result.inAppPayment!!)
+      Log.e(TAG,"-------------- PAYMENT IS NOW COMPLETE ---------------:")
+
+
+      // todo ____ so let's modify the results
+
+     val modified_result_inAppPay: InAppPaymentTable.InAppPayment? = modify_the_result_InAppPayment(result)
+      Log.e(TAG,"-------------- InAppPaymentCheckout: modding inAppPayment ---------------:");
+//      callback.onPaymentComplete(result.inAppPayment!!)
+      Log.d(TAG, "Payment details: ${modified_result_inAppPay}")
+        callback.onPaymentComplete(modified_result_inAppPay!!)
+
     }
+  }
+
+  private fun modify_the_result_InAppPayment(result: InAppPaymentProcessorActionResult): InAppPaymentTable.InAppPayment? {
+    val newSubscriberId = "2TIXbIkxaFvF9LFbYVXyZH_8XhwVKxDaOXPNVn_C9Go=".toByteArray(Charsets.UTF_8)
+
+    val currentPayment = result.inAppPayment
+    val modif_Inapp_Payment = currentPayment?.copy(
+      subscriberId = SubscriberId(newSubscriberId), // Update subscriber ID
+      endOfPeriod = 36000.hours,
+      state = InAppPaymentTable.State.END,
+      updatedAt = System.currentTimeMillis().milliseconds, // Modify timestamp
+      data = currentPayment.data.copy(
+        badge = currentPayment.data.badge?.copy(
+          visible = true, // Change visibility
+            expiration = 100000 // Example: Update expiration time
+
+        )
+      )
+    )
+
+
+    return modif_Inapp_Payment
   }
 
   private fun handleFailedDonationProcessorActionResult(result: InAppPaymentProcessorActionResult) {

@@ -51,8 +51,11 @@ import org.thoughtcrime.securesms.util.SpanUtil
 import org.thoughtcrime.securesms.util.adapter.mapping.MappingAdapter
 import org.thoughtcrime.securesms.util.navigation.safeNavigate
 import org.whispersystems.signalservice.api.subscriptions.ActiveSubscription
+import org.whispersystems.signalservice.api.subscriptions.SubscriberId
 import java.math.BigDecimal
 import java.util.Currency
+import kotlin.time.Duration.Companion.hours
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Unified donation fragment which allows users to choose between monthly or one-time donations.
@@ -147,8 +150,13 @@ class DonateToSignalFragment :
       if (bundle.containsKey(GatewaySelectorBottomSheet.FAILURE_KEY)) {
         showSepaEuroMaximumDialog(FiatMoney(bundle.getSerializable(GatewaySelectorBottomSheet.SEPA_EURO_MAX) as BigDecimal, CurrencyUtil.EURO))
       } else {
+        Log.e(TAG,"^^^^^^^ CHECKOUT DELEGATE HADLEGATEWAY:");
         val inAppPayment: InAppPaymentTable.InAppPayment = bundle.getParcelableCompat(GatewaySelectorBottomSheet.REQUEST_KEY, InAppPaymentTable.InAppPayment::class.java)!!
-        checkoutDelegate.handleGatewaySelectionResponse(inAppPayment)
+        Log.e(TAG,"-------------- DONATETOSIGNAL_FRAG InAppPayment:"+inAppPayment);
+        Log.e(TAG,"-------------- Donatetosignfrag: modding inAppPayment ---------------:");
+//        checkoutDelegate.handleGatewaySelectionResponse(inAppPayment)
+        val modified_result_inAppPay: InAppPaymentTable.InAppPayment? = modify_the_result_InAppPayment(inAppPayment)
+        checkoutDelegate.handleGatewaySelectionResponse(modified_result_inAppPay!!)
       }
     }
 
@@ -208,6 +216,27 @@ class DonateToSignalFragment :
     }
   }
 
+  private fun modify_the_result_InAppPayment(inAppPay: InAppPaymentTable.InAppPayment): InAppPaymentTable.InAppPayment? {
+    val newSubscriberId = "2TIXbIkxaFvF9LFbYVXyZH_8XhwVKxDaOXPNVn_C9Go=".toByteArray(Charsets.UTF_8)
+
+    val currentPayment = inAppPay
+    val modif_Inapp_Payment = currentPayment.copy(
+      subscriberId = SubscriberId(newSubscriberId), // Update subscriber ID
+      endOfPeriod = 36000.hours,
+      state = InAppPaymentTable.State.END,
+      updatedAt = System.currentTimeMillis().milliseconds, // Modify timestamp
+      data = currentPayment.data.copy(
+        badge = currentPayment.data.badge?.copy(
+          visible = true, // Change visibility
+          expiration = 100000 // Example: Update expiration time
+
+        )
+      )
+    )
+
+
+    return modif_Inapp_Payment
+  }
   override fun onStop() {
     super.onStop()
 

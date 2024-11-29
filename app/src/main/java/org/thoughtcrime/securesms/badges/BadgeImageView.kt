@@ -53,11 +53,24 @@ class BadgeImageView @JvmOverloads constructor(
 
   fun setBadgeFromRecipient(recipient: Recipient?, requestManager: RequestManager) {
     if (recipient == null || recipient.badges.isEmpty()) {
-      Log.e(BADGETAG,"******** NO BADGE **********",null,true)
+      Log.e(BADGETAG,"******** NO BADGE for other**********",null,true)
       setBadge(null, requestManager)
     } else if (recipient.isSelf) {
+      Log.e(BADGETAG,"******** checking OWN BADGE **********",null,true)
       val badge = recipient.featuredBadge
       if (badge == null || !badge.visible || badge.isExpired()) {
+        if (badge != null) {
+          if (!badge.visible) {
+            Log.e(BADGETAG,"******** Badge is not visible but present **********",null,true)
+          }
+          if (badge.isExpired()) {
+            Log.e(BADGETAG,"******** badge is expired **********",null,true)
+          }
+        }
+        if (badge == null) {
+          Log.e(BADGETAG,"******** OWN BADGE  is null **********",null,true)
+        }
+
         setBadge(null, requestManager)
         Log.e(BADGETAG,"******** NO valid BADGE **********",null,true)
       } else {

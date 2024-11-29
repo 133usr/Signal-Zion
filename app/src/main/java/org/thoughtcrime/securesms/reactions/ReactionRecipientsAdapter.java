@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 
+import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.badges.BadgeImageView;
 import org.thoughtcrime.securesms.components.AvatarImageView;
@@ -46,7 +47,7 @@ final class ReactionRecipientsAdapter extends RecyclerView.Adapter<ReactionRecip
   }
 
   static final class ViewHolder extends RecyclerView.ViewHolder {
-
+    String TAG= "reactionrecipietnadapt";
     private final AvatarImageView avatar;
     private final BadgeImageView  badge;
     private final TextView        recipient;
@@ -67,6 +68,7 @@ final class ReactionRecipientsAdapter extends RecyclerView.Adapter<ReactionRecip
       if (reaction.getSender().isSelf()) {
         this.recipient.setText(R.string.ReactionsRecipientAdapter_you);
         this.avatar.setAvatar(Glide.with(avatar), null, false);
+        Log.e(TAG, "-------------- SET BADGE TO NULL reactionrecipients---------------:");
         this.badge.setBadge(null);
         AvatarUtil.loadIconIntoImageView(reaction.getSender(), avatar);
       } else {
