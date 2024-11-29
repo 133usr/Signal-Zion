@@ -16,6 +16,7 @@ import org.thoughtcrime.securesms.util.adapter.mapping.MappingViewHolder
 /**
  * Renders a large avatar (80dp) for a given Recipient.
  */
+
 object AvatarPreference {
 
   fun register(adapter: MappingAdapter) {

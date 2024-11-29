@@ -143,6 +143,7 @@ class InAppPaymentCheckoutDelegate(
     if (result.action == InAppPaymentProcessorAction.CANCEL_SUBSCRIPTION) {
       callback.onSubscriptionCancelled(result.inAppPaymentType)
     } else {
+      Log.e(TAG,"-------------- PAYMENT IS NOW COMPLETE ---------------:");
       callback.onPaymentComplete(result.inAppPayment!!)
     }
   }

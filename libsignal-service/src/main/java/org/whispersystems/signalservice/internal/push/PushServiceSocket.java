@@ -2264,14 +2264,15 @@ import okhttp3.internal.http2.StreamResetException;
       if (urlFragment.contains("configuration")||urlFragment.contains("receipt_credentials")){
         Log.e(TAG,"%%% Calling readyBodystring  and return Actual RESPONSE");
         if(urlFragment.contains("receipt_credentials"))
-        {Log.e(TAG,"%%% Resonse for Receipt Credential: "+readBodyString(response));}
+          {Log.e(TAG,"%%% Resonse for Receipt Credential: "+readBodyString(response));}
+
           return readBodyString(response);
       }
       else
         return "{\"subscription\":{" +
                "\"level\": 1," +
                "\"currency\": \"GBP\"," +
-               "\"amount\": 99.99," +
+               "\"amount\": 100," +
                "\"endOfCurrentPeriod\": 97990000," +
                "\"active\": true," +
                "\"billingCycleAnchor\": 16700," +

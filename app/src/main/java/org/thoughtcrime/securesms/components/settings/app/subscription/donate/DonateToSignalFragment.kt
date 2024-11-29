@@ -510,6 +510,7 @@ class DonateToSignalFragment :
     Toast.makeText(context, "badge: "+inAppPayment.data?.badge, Toast.LENGTH_SHORT).show()
 
 
+    Log.e(TAG, "Payment complete. Badge: ${inAppPayment.data?.badge}")
     findNavController().safeNavigate(DonateToSignalFragmentDirections.actionDonateToSignalFragmentToThanksForYourSupportBottomSheetDialog(Badges.fromDatabaseBadge(inAppPayment.data.badge!!)))
   }
 

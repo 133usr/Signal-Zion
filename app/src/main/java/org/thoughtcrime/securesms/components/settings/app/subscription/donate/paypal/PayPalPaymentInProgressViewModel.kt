@@ -160,7 +160,7 @@ class PayPalPaymentInProgressViewModel(
           
 
 //        )
-        Log.e("Completeable.completesd","-----------------------------------------------------------------------------")
+        Log.e("Completeable.completesd","----------------------------Completeable.complete-------------------------------")
         Completable.complete()
       }
       .subscribeOn(Schedulers.io())

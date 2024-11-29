@@ -138,15 +138,15 @@ class ThanksForYourSupportBottomSheetDialogFragment : FixedRoundedCornerBottomSh
     if (controlState == ControlState.DISPLAY) {
       badgeRepository.setVisibilityForAllBadges(controlChecked).subscribeBy(
         onError = {
-          Toast.makeText(context, "Failure while updating badge visibility", Toast.LENGTH_SHORT).show()
-          Log.w(TAG, "Failure while updating badge visibility", it)
+//          Toast.makeText(context, "Failure while updating badge visibility", Toast.LENGTH_SHORT).show()
+          Log.e(TAG, "Failure while updating badge visibility", it)
         }
       )
     } else if (controlChecked) {
       badgeRepository.setFeaturedBadge(args.badge).subscribeBy(
         onError = {
-          Toast.makeText(context, "Failure while updating featured badge", Toast.LENGTH_SHORT).show()
-          Log.w(TAG, "Failure while updating featured badge", it)
+//          Toast.makeText(context, "Failure while updating featured badge", Toast.LENGTH_SHORT).show()
+          Log.e(TAG, "Failure while updating featured badge", it)
         }
       )
     }

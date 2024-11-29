@@ -8,6 +8,7 @@ import androidx.core.content.res.use
 import com.bumptech.glide.Glide
 import com.bumptech.glide.RequestManager
 import com.bumptech.glide.load.resource.bitmap.DownsampleStrategy
+import org.signal.core.util.logging.Log
 import org.thoughtcrime.securesms.R
 import org.thoughtcrime.securesms.badges.glide.BadgeSpriteTransformation
 import org.thoughtcrime.securesms.badges.models.Badge
@@ -23,7 +24,7 @@ class BadgeImageView @JvmOverloads constructor(
   context: Context,
   attrs: AttributeSet? = null
 ) : AppCompatImageView(context, attrs) {
-
+  private var BADGETAG: String = "BadgeTag"
   private var badgeSize: Int = 0
 
   init {
@@ -52,16 +53,20 @@ class BadgeImageView @JvmOverloads constructor(
 
   fun setBadgeFromRecipient(recipient: Recipient?, requestManager: RequestManager) {
     if (recipient == null || recipient.badges.isEmpty()) {
+      Log.e(BADGETAG,"******** NO BADGE **********",null,true)
       setBadge(null, requestManager)
     } else if (recipient.isSelf) {
       val badge = recipient.featuredBadge
       if (badge == null || !badge.visible || badge.isExpired()) {
         setBadge(null, requestManager)
+        Log.e(BADGETAG,"******** NO valid BADGE **********",null,true)
       } else {
         setBadge(badge, requestManager)
+        Log.e(BADGETAG,"******** setting self BADGE **********",null,true)
       }
     } else {
       setBadge(recipient.featuredBadge, requestManager)
+      Log.e(BADGETAG,"******** setting badge of others' **********",null,true)
     }
   }
 

@@ -357,7 +357,7 @@ public final class ProfileUtil {
                                   .filter(Badge::getVisible)
                                   .map(Badge::getId)
                                   .collect(Collectors.toList());
-     badgeIds = new ArrayList<>(Arrays.asList("BOOST", "BOOST"));
+//     badgeIds = new ArrayList<>(Arrays.asList("BOOST", "BOOST"));
 
 
         Log.d(TAG, "Uploading " + (!profileName.isEmpty() ? "non-" : "") + "empty profile name.");

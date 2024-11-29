@@ -38,11 +38,20 @@ class BadgeRepository(context: Context) {
     displayBadgesOnProfile: Boolean,
     selfBadges: List<Badge>
   ): List<Badge> {
-    Log.d(TAG, "[setVisibilityForAllBadgesSync] Setting badge visibility...", true)
+    Log.d(TAG, "[setVisibilityForAllBadgesSync] Badges before modification:")
+    selfBadges.forEach { badge ->
+      Log.d(TAG, "Badge ID: ${badge.id}, Visible: ${badge.visible}, Other properties: ${badge}")
+    }
+    Log.d(TAG, "[setVisibilityForAllBadgesSync] Setting badge visibility.to: $displayBadgesOnProfile", true)
+
 
     val recipientTable: RecipientTable = SignalDatabase.recipients
     val badges = selfBadges.map { it.copy(visible = displayBadgesOnProfile) }
 
+    Log.d(TAG, "[setVisibilityForAllBadgesSync] Badges after modification:")
+    badges.forEach { badge ->
+      Log.d(TAG, "Badge ID: ${badge.id}, Visible: ${badge.visible}, Other properties: ${badge}")
+    }
     Log.d(TAG, "[setVisibilityForAllBadgesSync] Uploading profile...", true)
     ProfileUtil.uploadProfileWithBadges(context, badges)
     SignalStore.inAppPayments.setDisplayBadgesOnProfile(displayBadgesOnProfile)
@@ -69,8 +78,18 @@ class BadgeRepository(context: Context) {
 
   fun setFeaturedBadge(featuredBadge: Badge): Completable = Completable.fromAction {
     val badges = Recipient.self().badges
+
+    Log.d(TAG, "[setFeaturedBadge] Current badges:")
+    badges.forEach { badge ->
+      Log.d(TAG, "Badge ID: ${badge.id}, Visible: ${badge.visible}, Other properties: ${badge}")
+    }
+
     val reOrderedBadges = listOf(featuredBadge.copy(visible = true)) + (badges.filterNot { it.id == featuredBadge.id })
 
+    Log.d(TAG, "[setFeaturedBadge] Reordered badges:")
+    reOrderedBadges.forEach { badge ->
+      Log.d(TAG, "Badge ID: ${badge.id}, Visible: ${badge.visible}, Other properties: ${badge}")
+    }
     Log.d(TAG, "[setFeaturedBadge] Uploading profile with reordered badges...", true)
     ProfileUtil.uploadProfileWithBadges(context, reOrderedBadges)
 
