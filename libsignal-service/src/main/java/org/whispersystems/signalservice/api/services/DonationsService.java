@@ -384,6 +384,7 @@ public class DonationsService {
   public ServiceResponse<ReceiptCredentialResponse> submitReceiptCredentialRequestSync(SubscriberId subscriberId, ReceiptCredentialRequest receiptCredentialRequest) {
     return wrapInServiceResponse(() -> {
       ReceiptCredentialResponse response = pushServiceSocket.submitReceiptCredentials(subscriberId.serialize(), receiptCredentialRequest);
+      Log.e(TAG,"-------------- response from wrapInservic ---------------:"+response.toString());
       return new Pair<>(response, 200);
     });
   }
