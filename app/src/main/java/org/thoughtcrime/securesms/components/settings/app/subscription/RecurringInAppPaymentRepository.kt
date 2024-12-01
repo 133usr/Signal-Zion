@@ -81,7 +81,7 @@ object RecurringInAppPaymentRepository {
 
 
   // Creating ActiveSubscription object
-  val activeSubscription = ActiveSubscription(mockSubscription, mockChargeFailure)
+//  val activeSubscription = ActiveSubscription(mockSubscription, mockChargeFailure)
 
   @WorkerThread
   fun getActiveSubscriptionSync(type: InAppPaymentSubscriberRecord.Type): Result<ActiveSubscription> {

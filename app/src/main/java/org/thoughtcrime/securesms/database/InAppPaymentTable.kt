@@ -359,6 +359,7 @@ class InAppPaymentTable(context: Context, databaseHelper: SignalDatabase) : Data
       }
 
       override fun deserialize(input: Cursor): InAppPayment {
+        
         return InAppPayment(
           id = InAppPaymentId(input.requireLong(ID)),
           type = InAppPaymentType.deserialize(input.requireInt(TYPE)),

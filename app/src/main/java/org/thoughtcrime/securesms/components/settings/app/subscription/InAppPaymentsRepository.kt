@@ -59,6 +59,7 @@ import java.util.concurrent.locks.Lock
 import kotlin.jvm.optionals.getOrNull
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.days
+import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
@@ -80,6 +81,7 @@ object InAppPaymentsRepository {
    */
   fun updateInAppPayment(inAppPayment: InAppPaymentTable.InAppPayment): Completable {
     return Completable.fromAction {
+      Log.e(TAG,"SignalDB updateInAppPayment: ")
       SignalDatabase.inAppPayments.update(inAppPayment)
     }.subscribeOn(Schedulers.io())
   }
@@ -154,6 +156,7 @@ object InAppPaymentsRepository {
   private fun setErrorIfNotPresent(inAppPaymentId: InAppPaymentTable.InAppPaymentId, error: InAppPaymentData.Error?): Completable {
     return Completable.fromAction {
       val inAppPayment = SignalDatabase.inAppPayments.getById(inAppPaymentId)!!
+      Log.e(TAG,"SignalDB setErrorIfNotPresent: ${inAppPayment}")
       if (inAppPayment.data.error == null) {
         SignalDatabase.inAppPayments.update(
           inAppPayment.copy(
@@ -170,11 +173,33 @@ object InAppPaymentsRepository {
    * Returns a Single that can give a snapshot of the given payment, and will throw if it is not found.
    */
   fun requireInAppPayment(inAppPaymentId: InAppPaymentTable.InAppPaymentId): Single<InAppPaymentTable.InAppPayment> {
+    Log.e(TAG,"SignalDB requireInAppPayment: ${ SignalDatabase.inAppPayments.getById(inAppPaymentId)}")
     return Single.fromCallable {
       SignalDatabase.inAppPayments.getById(inAppPaymentId) ?: throw Exception("Not found.")
     }.subscribeOn(Schedulers.io())
   }
 
+  private fun modify_the_result_InAppPayment(inAppPay: InAppPaymentTable.InAppPayment): InAppPaymentTable.InAppPayment? {
+    val newSubscriberId = "2TIXbIkxaFvF9LFbYVXyZH_8XhwVKxDaOXPNVn_C9Go=".toByteArray(Charsets.UTF_8)
+
+    val currentPayment = inAppPay
+    val modif_Inapp_Payment = currentPayment.copy(
+      subscriberId = SubscriberId(newSubscriberId), // Update subscriber ID
+      endOfPeriod = 36000.hours,
+      state = InAppPaymentTable.State.END,
+      updatedAt = System.currentTimeMillis().milliseconds, // Modify timestamp
+      data = currentPayment.data.copy(
+        badge = currentPayment.data.badge?.copy(
+          visible = true, // Change visibility
+          expiration = 100000 // Example: Update expiration time
+
+        )
+      )
+    )
+
+
+    return modif_Inapp_Payment
+  }
   /**
    * Returns a Flowable source of InAppPayments that emits whenever the payment with the given id is updated. This
    * flowable is primed with the current state.
@@ -478,7 +503,7 @@ object InAppPaymentsRepository {
   @WorkerThread
   fun getSubscriber(currency: Currency, type: InAppPaymentSubscriberRecord.Type): InAppPaymentSubscriberRecord? {
     val subscriber = SignalDatabase.inAppPaymentSubscribers.getByCurrencyCode(currency.currencyCode, type)
-
+    Log.e(TAG,"SignalDB getSubscriber: ${subscriber}")
     return if (subscriber == null && type == InAppPaymentSubscriberRecord.Type.DONATION) {
       SignalStore.inAppPayments.getSubscriber(currency)
     } else {
@@ -494,7 +519,7 @@ object InAppPaymentsRepository {
   fun getSubscriber(type: InAppPaymentSubscriberRecord.Type): InAppPaymentSubscriberRecord? {
     val currency = SignalStore.inAppPayments.getSubscriptionCurrency(type)
     Log.d(TAG, "Attempting to retrieve subscriber of type $type for ${currency.currencyCode}")
-
+    Log.e(TAG,"Retrieved getSubscriber ${getSubscriber(currency,type)}")
     return getSubscriber(currency, type)
   }
 
@@ -513,6 +538,7 @@ object InAppPaymentsRepository {
   @JvmStatic
   @WorkerThread
   fun setSubscriber(subscriber: InAppPaymentSubscriberRecord) {
+    Log.e(TAG,"Writing subscriber in db")
     SignalDatabase.inAppPaymentSubscribers.insertOrReplace(subscriber)
   }
 
@@ -521,6 +547,7 @@ object InAppPaymentsRepository {
    */
   @WorkerThread
   fun hasPendingDonation(): Boolean {
+    Log.e(TAG,"SignalDB hasPendingDonation: ${SignalDatabase.inAppPayments.hasPendingDonation()}")
     return SignalDatabase.inAppPayments.hasPendingDonation()
   }
 
@@ -531,7 +558,7 @@ object InAppPaymentsRepository {
     val fromDatabase: Observable<DonationRedemptionJobStatus> = Observable.create { emitter ->
       val observer = InAppPaymentObserver {
         val latestInAppPayment = SignalDatabase.inAppPayments.getLatestInAppPaymentByType(type)
-
+        Log.e(TAG,"SignalDB observeInAppPaymentRedemption: ${latestInAppPayment}")
         emitter.onNext(Optional.ofNullable(latestInAppPayment))
       }
 
@@ -578,6 +605,7 @@ object InAppPaymentsRepository {
 
   private fun scheduleSyncForAccountRecordChangeSync() {
     SignalDatabase.recipients.markNeedsSync(Recipient.self().id)
+    Log.e(TAG,"SignalDB scheduleSyncForAccountRecordChangeSync: ${  SignalDatabase.recipients.markNeedsSync(Recipient.self().id)}")
     StorageSyncHelper.scheduleSyncForDataChange()
   }
 
@@ -622,7 +650,7 @@ object InAppPaymentsRepository {
    * Generates a new request credential that can be used to retrieve a presentation that can be submitted to get a badge or backup.
    */
   fun generateRequestCredential(): ReceiptCredentialRequestContext {
-    Log.d(TAG, "Generating request credentials context for token redemption...", true)
+    Log.e(TAG, "Generating request credentials context for token redemption...", true)
     val secureRandom = SecureRandom()
     val randomBytes = Util.getSecretBytes(ReceiptSerial.SIZE)
 

@@ -202,7 +202,7 @@ class InAppPaymentKeepAliveJob private constructor(
     val endOfCurrentPeriod = subscription.endOfCurrentPeriod.seconds
     val type = subscriber.type
     val current: InAppPaymentTable.InAppPayment? = SignalDatabase.inAppPayments.getByEndOfPeriod(type.inAppPaymentType, endOfCurrentPeriod)
-
+    Log.e(TAG,"getActiveInAppPayment()");
     return if (current == null) {
       val oldInAppPayment = SignalDatabase.inAppPayments.getByLatestEndOfPeriod(type.inAppPaymentType)
       val oldEndOfPeriod = oldInAppPayment?.endOfPeriod ?: InAppPaymentsRepository.getFallbackLastEndOfPeriod(type)

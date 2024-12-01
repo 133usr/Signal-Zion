@@ -1,6 +1,7 @@
 package org.thoughtcrime.securesms.components.settings.app.subscription.donate.gateway
 
 import io.reactivex.rxjava3.core.Single
+import org.signal.core.util.logging.Log
 import org.signal.core.util.money.FiatMoney
 import org.thoughtcrime.securesms.components.settings.app.subscription.InAppPaymentsRepository
 import org.thoughtcrime.securesms.components.settings.app.subscription.getAvailablePaymentMethods
@@ -38,6 +39,7 @@ class GatewaySelectorRepository(
   }
 
   fun setInAppPaymentMethodType(inAppPayment: InAppPaymentTable.InAppPayment, paymentMethodType: InAppPaymentData.PaymentMethodType): Single<InAppPaymentTable.InAppPayment> {
+    Log.e("TAG","setInappPayment Method Type to :"+paymentMethodType);
     return Single.fromCallable {
       SignalDatabase.inAppPayments.update(
         inAppPayment.copy(

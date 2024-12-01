@@ -196,7 +196,7 @@ class DonateToSignalViewModel(
 
   private fun createInAppPayment(snapshot: DonateToSignalState): Single<InAppPaymentTable.InAppPayment> {
     val amount = getAmount(snapshot)
-
+    Log.e(TAG,"CREATING IN APP PAYMENTS: *******");
     return Single.fromCallable {
       SignalDatabase.inAppPayments.clearCreated()
       val id = SignalDatabase.inAppPayments.insert(
