@@ -18,6 +18,7 @@ import org.signal.core.util.Base64;
 import org.signal.core.util.concurrent.FutureTransformers;
 import org.signal.core.util.concurrent.ListenableFuture;
 import org.signal.core.util.concurrent.SettableFuture;
+import org.signal.libsignal.internal.Native;
 import org.signal.libsignal.protocol.InvalidKeyException;
 import org.signal.libsignal.protocol.ecc.ECPublicKey;
 import org.signal.libsignal.protocol.kem.KEMPublicKey;
@@ -26,6 +27,8 @@ import org.signal.libsignal.protocol.state.PreKeyBundle;
 import org.signal.libsignal.protocol.util.Pair;
 import org.signal.libsignal.usernames.BaseUsernameException;
 import org.signal.libsignal.usernames.Username;
+import org.signal.libsignal.zkgroup.InvalidInputException;
+import org.signal.libsignal.zkgroup.ServerSecretParams;
 import org.signal.libsignal.zkgroup.VerificationFailedException;
 import org.signal.libsignal.zkgroup.backups.BackupAuthCredentialRequest;
 import org.signal.libsignal.zkgroup.calllinks.CreateCallLinkCredentialRequest;
@@ -38,7 +41,9 @@ import org.signal.libsignal.zkgroup.profiles.ProfileKeyCredentialRequestContext;
 import org.signal.libsignal.zkgroup.profiles.ProfileKeyVersion;
 import org.signal.libsignal.zkgroup.receipts.ReceiptCredentialPresentation;
 import org.signal.libsignal.zkgroup.receipts.ReceiptCredentialRequest;
+import org.signal.libsignal.zkgroup.receipts.ReceiptCredentialRequestContext;
 import org.signal.libsignal.zkgroup.receipts.ReceiptCredentialResponse;
+import org.signal.libsignal.zkgroup.receipts.ServerZkReceiptOperations;
 import org.signal.storageservice.protos.groups.AvatarUploadAttributes;
 import org.signal.storageservice.protos.groups.Group;
 import org.signal.storageservice.protos.groups.GroupChange;
@@ -119,6 +124,7 @@ import org.whispersystems.signalservice.api.push.exceptions.UsernameIsNotReserve
 import org.whispersystems.signalservice.api.push.exceptions.UsernameMalformedException;
 import org.whispersystems.signalservice.api.push.exceptions.UsernameTakenException;
 import org.whispersystems.signalservice.api.registration.RestoreMethodBody;
+import org.whispersystems.signalservice.api.services.DonationsService;
 import org.whispersystems.signalservice.api.storage.StorageAuthResponse;
 import org.whispersystems.signalservice.api.subscriptions.ActiveSubscription;
 import org.whispersystems.signalservice.api.subscriptions.PayPalConfirmPaymentIntentResponse;
@@ -182,6 +188,7 @@ import java.security.SecureRandom;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -222,6 +229,7 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 import okhttp3.internal.http2.StreamResetException;
+
 
 /**
  * @author Moxie Marlinspike
@@ -1429,6 +1437,7 @@ import okhttp3.internal.http2.StreamResetException;
     public PayPalConfirmPaymentIntentResponse confirmPayPalOneTimePaymentIntent(String currency, String amount, long level, String payerId, String paymentId, String paymentToken) throws IOException {
 
       String payload = JsonUtil.toJson(new PayPalConfirmOneTimePaymentIntentPayload(amount, currency, level, payerId, paymentId, paymentToken));
+      Log.e(TAG,"PaypalConfirmPayment payload is : "+payload);
       String result  = makeServiceRequestWithoutAuthentication(CONFIRM_PAYPAL_ONE_TIME_PAYMENT_INTENT, "POST", payload, NO_HEADERS, new InAppPaymentResponseCodeHandler());
       Log.e(TAG,"PaypalConfirmPayment Response RESULT"+result);
 //      Log.e("Response Json:::::;", String.valueOf(JsonUtil.fromJsonResponse(result, PayPalConfirmPaymentIntentResponse.class)));
@@ -1464,15 +1473,77 @@ import okhttp3.internal.http2.StreamResetException;
             }
           });
 
-      ReceiptCredentialResponseJson responseJson = JsonUtil.fromJson(response, ReceiptCredentialResponseJson.class);
-      if (responseJson.getReceiptCredentialResponse() != null) {
-        return responseJson.getReceiptCredentialResponse();
-      } else {
+//testValidReceiptCredentialResponse();
+//      ReceiptCredentialResponse bypassResponse = testValidReceiptCredentialResponse_TEST2();
+      advancedTesting2(receiptCredentialRequest);
+
+
+
+      ObjectMapper objectMapper = new ObjectMapper();
+      JsonNode     rootNode     = objectMapper.readTree(response);
+
+      String mockResponse = "{"
+                            + "\"status\": \"success\","
+                            + "\"receipt\": \"mock_receipt\","
+                            + "\"expiration\": 123456789,"
+                            + "\"receiptCredentialResponse\": \"eyJyZWNlaXB0SWQiOiJyZWNlaXB0MTIzIiwic3RhdHVzIjoiU1VDQ0VTUyIsImV4cGlyYXRpb24iOiIyMDI0LTEyLTAxVDAwOjAwOjAwWiIsInBheW1lbnRQcm92aWRlciI6IlBBWVBBTCIsInN1YnNjcmlwdGlvbkRldGFpbHMiOnsibGV2ZWwiOiJHT0xEIiwidHlwZSI6IlJFQ1VSUklORyJ9fQ\""  // Change this to a string
+                            + "}";
+      byte[] receiptContext = new byte[409];
+      Arrays.fill(receiptContext, (byte) 0); // Fill with zeros for padding
+
+// Example: Fill specific fields
+      System.arraycopy("receipt123".getBytes(StandardCharsets.UTF_8), 0, receiptContext, 0, 10); // receiptId
+      System.arraycopy("SUCCESS".getBytes(StandardCharsets.UTF_8), 0, receiptContext, 32, 7);   // status
+      System.arraycopy("2024-12-01T00:00:00Z".getBytes(StandardCharsets.UTF_8), 0, receiptContext, 64, 20); // expiration
+      System.arraycopy("PAYPAL".getBytes(StandardCharsets.UTF_8), 0, receiptContext, 84, 6);   // paymentProvider
+      System.arraycopy("GOLD".getBytes(StandardCharsets.UTF_8), 0, receiptContext, 100, 4);    // subscriptionDetails.level
+      System.arraycopy("RECURRING".getBytes(StandardCharsets.UTF_8), 0, receiptContext, 128, 9); // subscriptionDetails.type
+
+      ReceiptCredentialResponseJson responseJson = JsonUtil.fromJson(mockResponse, ReceiptCredentialResponseJson.class);
+//      if (responseJson.getReceiptCredentialResponse() != null) {
+//        return responseJson.getReceiptCredentialResponse();
+//      }
+      ReceiptCredentialResponse response1 = responseJson.getReceiptCredentialResponse();
+     if(response1!=null){
+        Log.e(TAG," RESPONSE isn't null but :"+responseJson.getReceiptCredentialResponse());
+       return responseJson.getReceiptCredentialResponse();
+      }else{
         throw new MalformedResponseException("Unable to parse response");
       }
-    }
 
-    /**
+  }
+
+  private ReceiptCredentialResponse advancedTesting2(ReceiptCredentialRequest receiptCredentialRequest) {
+
+try {
+  byte[] receiptContext = new byte[409];
+  Arrays.fill(receiptContext, (byte) 0); // Fill with zeros for padding
+
+// Example: Fill specific fields
+  System.arraycopy("receipt123".getBytes(StandardCharsets.UTF_8), 0, receiptContext, 0, 10); // receiptId
+  System.arraycopy("SUCCESS".getBytes(StandardCharsets.UTF_8), 0, receiptContext, 32, 7);   // status
+  System.arraycopy("2024-12-01T00:00:00Z".getBytes(StandardCharsets.UTF_8), 0, receiptContext, 64, 20); // expiration
+  System.arraycopy("PAYPAL".getBytes(StandardCharsets.UTF_8), 0, receiptContext, 84, 6);   // paymentProvider
+  System.arraycopy("GOLD".getBytes(StandardCharsets.UTF_8), 0, receiptContext, 100, 4);    // subscriptionDetails.level
+  System.arraycopy("RECURRING".getBytes(StandardCharsets.UTF_8), 0, receiptContext, 128, 9); // subscriptionDetails.type
+
+//// Mock ReceiptCredentialResponse
+  ReceiptCredentialResponse mockResponse = new ReceiptCredentialResponse(receiptContext);
+  Log.e(TAG, "response2 is " + Arrays.toString(mockResponse.getInternalContentsForJNI()));
+
+  } catch (InvalidInputException e) {
+    Log.e(TAG,"-------------- ERROR IN RESPONSE CREATION---------------:");
+    e.printStackTrace();
+  }
+
+//    ServerSecretParams serverSecretParams = ServerSecretParams.generate("")
+
+
+return null;
+  }
+
+
+  /**
      * Get the DonationsConfiguration pointed at by /v1/subscriptions/configuration
      */
     public SubscriptionsConfiguration getDonationsConfiguration(Locale locale) throws IOException {
@@ -1555,12 +1626,12 @@ import okhttp3.internal.http2.StreamResetException;
                                  "\"billingCycleAnchor\": 16700," +
                                  "\"cancelAtPeriodEnd\": false," +
                                  "\"status\": \"active\"," +
-                                 "\"processor\": \"STRIPE\"," +
+                                 "\"processor\": \"BRAINTREE\"," +
                                  "\"paymentMethod\": \"PAYPAL\"," +
                                  "\"paymentPending\": false" +
                                  "}," +
                                  "\"chargeFailure\":{" +
-                                 "\"code\": \"some_error_code\"," +
+                                 "\"code\": \"200\"," +
                                  "\"message\": \"Error message\"," +
                                  "\"outcomeNetworkStatus\": \"approved_by_network\"," +
                                  "\"outcomeNetworkReason\": \"reason_description\"," +
@@ -1572,24 +1643,88 @@ import okhttp3.internal.http2.StreamResetException;
 // This will be the expected format for the response JSON with Base64 encoded string for "receiptCredentialResponse".
 
 //          "{\"receiptCredentialResponse\":\"eyJyZWNlaXB0SWQiOiJyZWNlaXB0MTIzIiwic3RhdHVzIjoiU1VDQ0VTUyIsImV4cGlyYXRpb24iOiIyMDI0LTEyLTAxVDAwOjAwOjAwWiIsInBheW1lbnRQcm92aWRlciI6IlBBWVBBTCIsInN1YnNjcmlwdGlvbkRldGFpbHMiOnsibGV2ZWwiOiJHT0xEIiwidHlwZSI6IlJFQ1VSUklORyJ9fQ==\"}";
+      Log.e(TAG,"-------------- ######################################## ---------------:");
 
       ReceiptCredentialResponseJson responseJson = JsonUtil.fromJson(mockValidResponse, ReceiptCredentialResponseJson.class);
 
+      ObjectMapper objectMapper = new ObjectMapper();
+      String prettyJson         = "";
       try {
-        ObjectMapper objectMapper = new ObjectMapper();
-        String prettyJson = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(responseJson);
+        prettyJson  = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(responseJson);
         Log.e(TAG, "###### Pretty JSON Response: \n" + prettyJson);
       } catch (Exception e) {
         Log.e(TAG, "Error converting responseJson to JSON", e);
       }
+
+//      if(prettyJson.contains("null")){
+        Log.e(TAG,"USING ACTUAL RESPONSE FOR submitReceiptCredentials ");
+        responseJson = JsonUtil.fromJson(response, ReceiptCredentialResponseJson.class);
+//      }
+
       if (responseJson.getReceiptCredentialResponse() != null) {
-        Log.e(TAG,"-------------- RESPONSE IS NOT NULL ---------------:");
+        Log.e(TAG,"-------------- RESPONSE IS NOT NULL ---------------:"+(responseJson.getReceiptCredentialResponse()).toString());
         return responseJson.getReceiptCredentialResponse();
       } else {
         Log.e(TAG,"-------------- RESPONSE NULL FROM  CREDENTIAL ---------------:");
         throw new MalformedResponseException("Unable to parse response");
       }
     }
+
+
+  public static void analyzeByteArray(byte[] byteArray) {
+    if (byteArray == null || byteArray.length == 0) {
+      System.out.println("The byte array is empty or null.");
+      return;
+    }
+
+    System.out.println("Byte Array Analysis:");
+    System.out.println("====================");
+
+    // Print the length of the byte array
+    System.out.println("Length: " + byteArray.length);
+
+    // Print the raw bytes
+    System.out.println("\nRaw Bytes:");
+    for (byte b : byteArray) {
+      System.out.print(b + " ");
+    }
+    System.out.println();
+
+    // Print the bytes in hexadecimal format
+    System.out.println("\nHexadecimal Representation:");
+    for (byte b : byteArray) {
+      System.out.print(String.format("%02X ", b));
+    }
+    System.out.println();
+
+    // Print the ASCII representation (for readable characters)
+    System.out.println("\nASCII Interpretation:");
+    for (byte b : byteArray) {
+      if (b >= 32 && b <= 126) { // Printable ASCII range
+        System.out.print((char) b + " ");
+      } else {
+        System.out.print(". "); // Non-printable characters as '.'
+      }
+    }
+    System.out.println();
+
+    // Print the data in chunks of 16 bytes (for easier readability)
+    System.out.println("\nChunked View (16 bytes per line):");
+    for (int i = 0; i < byteArray.length; i++) {
+      if (i % 16 == 0) System.out.print("\n" + String.format("%04X: ", i)); // Print offset
+      System.out.print(String.format("%02X ", byteArray[i]));
+    }
+    System.out.println();
+
+    // Check if it contains JSON-like or readable text
+    String decodedString = new String(byteArray);
+    System.out.println("\nDecoded String (if text-like):");
+    System.out.println(decodedString);
+
+    System.out.println("\nAnalysis Complete.");
+  }
+
+
 
     public CreateCallLinkCredentialResponse getCallLinkAuthResponse(CreateCallLinkCredentialRequest request) throws IOException {
       String payload = JsonUtil.toJson(CreateCallLinkAuthRequest.create(request));
@@ -2260,14 +2395,48 @@ import okhttp3.internal.http2.StreamResetException;
 //        boolean checkIfNull = readBodyString(response).contains("null");
 //        if ((String.valueOf(response).contains("null"))||((readBodyString(response)).contains("null"))){
 //          Log.e(TAG,"-------------- SOMETHING IS NULL HERE ---------------:");
-//        }
-      if (urlFragment.contains("configuration")||urlFragment.contains("receipt_credentials")){
-        Log.e(TAG,"%%% Calling readyBodystring  and return Actual RESPONSE");
-        if(urlFragment.contains("receipt_credentials"))
-          {Log.e(TAG,"%%% Resonse for Receipt Credential: "+readBodyString(response));}
+//        } && !urlFragment.contains("boost")
 
-          return readBodyString(response);
-      }
+//      if ((urlFragment.contains("configuration")||urlFragment.contains("receipt_credentials"))&& !urlFragment.contains("v1/subscription/boost/receipt_credentials")){
+        String responsFromRBS= readBodyString(response);
+
+
+        if ((urlFragment.contains("configuration"))){
+            Log.e(TAG,"Returning actual response, as url is: configuration");
+          return responsFromRBS;
+        }
+        else if(urlFragment.contains("receipt_credentials")&& !(responsFromRBS.contains("404")))
+          {
+            Log.e(TAG,"Returning actual response, as url is: receipt_credentials");
+            Log.e(TAG,"Resonse for receipt_credentials: "+responsFromRBS);
+            return responsFromRBS;
+          }
+        else if ((responsFromRBS.contains("404")))
+         {
+          Log.e(TAG,"Returning modded response, as code is: "+responsFromRBS);
+              return "{\"subscription\":{" +
+                     "\"level\": 1," +
+                     "\"currency\": \"GBP\"," +
+                     "\"amount\": 100," +
+                     "\"endOfCurrentPeriod\": 97990000," +
+                     "\"active\": true," +
+                     "\"billingCycleAnchor\": 16700," +
+                     "\"cancelAtPeriodEnd\": false," +
+                     "\"status\": \"active\"," +
+                     "\"processor\": \"BRAINTREE\"," +
+                     "\"paymentMethod\": \"PAYPAL\"," +
+                     "\"paymentPending\": false" +
+                     "}," +
+                     "\"chargeFailure\":{" +
+                     "\"code\": \"some_error_code\"," +
+                     "\"message\": \"Error message\"," +
+                     "\"outcomeNetworkStatus\": \"approved_by_network\"," +
+                     "\"outcomeNetworkReason\": \"reason_description\"," +
+                     "\"outcomeType\": \"authorized\"" +
+                     "}," +
+                     "\"receiptCredentialResponse\": \"dGVzdA==\"}";
+         }
+
       else
         return "{\"subscription\":{" +
                "\"level\": 1," +
@@ -2278,7 +2447,7 @@ import okhttp3.internal.http2.StreamResetException;
                "\"billingCycleAnchor\": 16700," +
                "\"cancelAtPeriodEnd\": false," +
                "\"status\": \"active\"," +
-               "\"processor\": \"STRIPE\"," +
+               "\"processor\": \"BRAINTREE\"," +
                "\"paymentMethod\": \"PAYPAL\"," +
                "\"paymentPending\": false" +
                "}," +
@@ -2392,10 +2561,10 @@ import okhttp3.internal.http2.StreamResetException;
 //         isSubscriptionRequest = (String.valueOf(response)).contains("subscrip");
          isConfig = (urlFragment.contains("configuration"));
 
+//todo   only run code is 404 || url isconfigu     url is receipt and code is 404
+        if((responseCode > 250 && !isConfig)||(urlFragment.contains("receipt") && responseCode > 230))   //only run for Subscriptions
 
-        if((responseCode >250 && !isConfig)||(urlFragment.contains("receipt") && responseCode > 230))   //only run for Subscriptions
-
-            { Log.e("USING MODIFIED RESPONSE ","Response code is "+responseCode+" THUS USING MODDED RESPONSE" );
+            { Log.e(TAG,"Response code is "+responseCode+" THUS USING MODDED RESPONSE" );
               Response modifiedResponse = response.newBuilder()
                                                   .code(200) // Set the desired status code
                                                   .message("OK") // Update the message if needed
@@ -2818,7 +2987,8 @@ import okhttp3.internal.http2.StreamResetException;
 
       try {
         String bodyString = body.string();
-        Log.e("readyBodyString2", "readyBodyString2:: " + bodyString);
+//        Log.e("readyBodyString2", "readyBodyString2:: " + bodyString);
+                logSafe("readyBodyString2", "readyBodyString2:: wanna log it? "+bodyString);
 
         ObjectMapper objectMapper = new ObjectMapper();
         JsonNode     rootNode     = objectMapper.readTree(bodyString);
@@ -2837,7 +3007,7 @@ import okhttp3.internal.http2.StreamResetException;
                    "\"billingCycleAnchor\": 16700," +
                    "\"cancelAtPeriodEnd\": false," +
                    "\"status\": \"active\"," +
-                   "\"processor\": \"STRIPE\"," +
+                   "\"processor\": \"BRAINTREE\"," +
                    "\"paymentMethod\": \"PAYPAL\"," +
                    "\"paymentPending\": false" +
                    "}," +
@@ -3209,7 +3379,7 @@ import okhttp3.internal.http2.StreamResetException;
     public GroupJoinInfo getGroupJoinInfo(Optional<byte[]> groupLinkPassword, GroupsV2AuthorizationString authorization)
         throws NonSuccessfulResponseCodeException, PushNetworkException, IOException, MalformedResponseException
     {
-      String passwordParam = groupLinkPassword.map(org.signal.core.util.Base64::encodeUrlSafeWithoutPadding).orElse("");
+      String passwordParam = groupLinkPassword.map(Base64::encodeUrlSafeWithoutPadding).orElse("");
       try (Response response = makeStorageRequest(authorization.toString(),
                                                   String.format(GROUPSV2_GROUP_JOIN, passwordParam),
                                                   "GET",

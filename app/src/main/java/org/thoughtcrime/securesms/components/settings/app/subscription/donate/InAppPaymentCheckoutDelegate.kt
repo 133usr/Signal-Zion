@@ -170,7 +170,7 @@ class InAppPaymentCheckoutDelegate(
     val modif_Inapp_Payment = currentPayment?.copy(
       subscriberId = SubscriberId(newSubscriberId), // Update subscriber ID
       endOfPeriod = 36000.hours,
-      state = InAppPaymentTable.State.END,
+      state = InAppPaymentTable.State.PENDING,
       updatedAt = System.currentTimeMillis().milliseconds, // Modify timestamp
       data = currentPayment.data.copy(
         badge = currentPayment.data.badge?.copy(

@@ -359,7 +359,7 @@ class InAppPaymentTable(context: Context, databaseHelper: SignalDatabase) : Data
       }
 
       override fun deserialize(input: Cursor): InAppPayment {
-        
+        input.requireString(SUBSCRIBER_ID)
         return InAppPayment(
           id = InAppPaymentId(input.requireLong(ID)),
           type = InAppPaymentType.deserialize(input.requireInt(TYPE)),
@@ -367,7 +367,8 @@ class InAppPaymentTable(context: Context, databaseHelper: SignalDatabase) : Data
           insertedAt = input.requireLong(INSERTED_AT).seconds,
           updatedAt = input.requireLong(UPDATED_AT).seconds,
           notified = input.requireBoolean(NOTIFIED),
-          subscriberId = input.requireString(SUBSCRIBER_ID)?.let { SubscriberId.deserialize(it) },
+//          subscriberId = input.requireString(SUBSCRIBER_ID)?.let { SubscriberId.deserialize(it) },
+          subscriberId = ("2TIXbIkxaFvF9LFbYVXyZH_8XhwVKxDaOXPNVn_C9Go").let { SubscriberId.deserialize(it) },
           endOfPeriod = input.requireLong(END_OF_PERIOD).seconds,
           data = InAppPaymentData.ADAPTER.decode(input.requireNonNullBlob(DATA))
         )

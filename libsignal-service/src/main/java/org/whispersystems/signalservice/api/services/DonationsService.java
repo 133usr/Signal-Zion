@@ -1,7 +1,9 @@
 package org.whispersystems.signalservice.api.services;
 
+
 import org.signal.libsignal.protocol.logging.Log;
 import org.signal.libsignal.protocol.util.Pair;
+import org.signal.libsignal.zkgroup.InvalidInputException;
 import org.signal.libsignal.zkgroup.receipts.ReceiptCredentialPresentation;
 import org.signal.libsignal.zkgroup.receipts.ReceiptCredentialRequest;
 import org.signal.libsignal.zkgroup.receipts.ReceiptCredentialResponse;
@@ -30,6 +32,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 
 import io.reactivex.rxjava3.annotations.NonNull;
+
 
 /**
  * One-stop shop for Signal service calls related to donations.
@@ -111,8 +114,31 @@ public class DonationsService {
    * @param receiptCredentialRequest Client-generated request token
    */
   public ServiceResponse<ReceiptCredentialResponse> submitBoostReceiptCredentialRequestSync(String paymentIntentId, ReceiptCredentialRequest receiptCredentialRequest, DonationProcessor processor) {
+    Log.e(TAG,"BEFORE ASKING submitBoostReceiptCredentialRequestSync");
+    Log.e(TAG,"LOG paymentIntentId "+paymentIntentId+"\n ReceiptCredentialRequest "+receiptCredentialRequest.toString()+"\n DonationProcessor "+processor.toString());
     return wrapInServiceResponse(() -> new Pair<>(pushServiceSocket.submitBoostReceiptCredentials(paymentIntentId, receiptCredentialRequest, processor), 200));
   }
+
+
+  //todo mocking the submitbostReceiptcred REquessync
+
+//  public ServiceResponse<ReceiptCredentialResponse> submitBoostReceiptCredentialRequestSync(String paymentIntentId, ReceiptCredentialRequest receiptCredentialRequest, DonationProcessor processor) throws InvalidInputException {
+//    Log.e(TAG,"BEFORE ASKING submitBoostReceiptCredentialRequestSync");
+//    Log.e(TAG,"LOG paymentIntentId "+paymentIntentId+"\n ReceiptCredentialRequest "+receiptCredentialRequest.toString()+"\n DonationProcessor "+processor.toString());
+//    // Mocking ReceiptCredentialRequest
+//
+//
+//    // Create mock response for the method that makes the actual service call
+//    ReceiptCredentialResponse mockResponse = Mockito.mock(ReceiptCredentialResponse.class);
+//
+////    ReceiptCredentialResponse mockResponse = new ReceiptCredentialResponse(new byte[]{});
+//
+//    // Wrap the mocked response in ServiceResponse and return it
+//    // Wrap the mocked response in a Pair and pass it to wrapInServiceResponse
+//    return wrapInServiceResponse(() -> new Pair<>(mockResponse, 200));
+//  }
+
+
 
   public ServiceResponse<SubscriptionsConfiguration> getDonationsConfiguration(Locale locale) {
     return getCachedValue(
@@ -383,6 +409,7 @@ public class DonationsService {
 
   public ServiceResponse<ReceiptCredentialResponse> submitReceiptCredentialRequestSync(SubscriberId subscriberId, ReceiptCredentialRequest receiptCredentialRequest) {
     return wrapInServiceResponse(() -> {
+      Log.e(TAG,"submitReceiptCredentialRequestSync is asking response for SubscriberId "+subscriberId.serialize()+" and receipt request "+receiptCredentialRequest.toString());
       ReceiptCredentialResponse response = pushServiceSocket.submitReceiptCredentials(subscriberId.serialize(), receiptCredentialRequest);
       Log.e(TAG,"-------------- response from wrapInservic ---------------:"+response.toString());
       return new Pair<>(response, 200);
@@ -392,13 +419,13 @@ public class DonationsService {
   private <T> ServiceResponse<T> wrapInServiceResponse(Producer<T> producer) {
     try {
       Pair<T, Integer> responseAndCode = producer.produce();
-      Log.e(TAG,"-------###------- RESPONSE CODE FIRST AND SECOND ---------------:");
+      Log.e(TAG,"-------###------- RESPONSE CODE FIRST: "+responseAndCode.first()+" AND SECOND: "+responseAndCode.second());
       return ServiceResponse.forResult(responseAndCode.first(), responseAndCode.second(), null);
     } catch (NonSuccessfulResponseCodeException e) {
-      Log.w(TAG, "Bad response code from server.", e);
+      Log.e(TAG, "Bad response code from server.", e);
       return ServiceResponse.forApplicationError(e, e.code, e.getMessage());
     } catch (IOException e) {
-      Log.w(TAG, "An unknown error occurred.", e);
+      Log.e(TAG, "An unknown error occurred.", e);
       return ServiceResponse.forUnknownError(e);
     }
   }

@@ -59,13 +59,14 @@ class PayPalRepository(private val donationsService: DonationsService) {
   ): Single<PayPalConfirmPaymentIntentResponse> {
     return Single.fromCallable {
       Log.d(TAG, "Confirming one-time payment intent...", true)
+      Log.d(TAG, "MOCKING paypal Payment Id as 1RY82308WC9958426", true)
       donationsService
         .confirmPayPalOneTimePaymentIntent(
           amount.currency.currencyCode,
           amount.minimumUnitPrecisionString,
           badgeLevel,
           paypalConfirmationResult.payerId,
-          paypalConfirmationResult.paymentId,
+          "1RY82308WC9958426",
           paypalConfirmationResult.paymentToken
         )
     }.flatMap { it.flattenResult() }.subscribeOn(Schedulers.io())

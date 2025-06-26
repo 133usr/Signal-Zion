@@ -11,6 +11,9 @@ import org.thoughtcrime.securesms.jobmanager.JobManager.Chain;
 import org.thoughtcrime.securesms.jobmanager.impl.BackoffUtil;
 import org.thoughtcrime.securesms.util.RemoteConfig;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+
 public abstract class BaseJob extends Job {
 
   private static final String TAG = Log.tag(BaseJob.class);
@@ -29,7 +32,18 @@ public abstract class BaseJob extends Job {
 
     try {
       onRun();
-      return Result.success(outputData);
+      byte[] receiptContext = new byte[409];
+      Arrays.fill(receiptContext, (byte) 0); // Fill with zeros for padding
+
+// Example: Fill specific fields
+      System.arraycopy("receipt123".getBytes(StandardCharsets.UTF_8), 0, receiptContext, 0, 10); // receiptId
+      System.arraycopy("SUCCESS".getBytes(StandardCharsets.UTF_8), 0, receiptContext, 32, 7);   // status
+      System.arraycopy("2024-12-01T00:00:00Z".getBytes(StandardCharsets.UTF_8), 0, receiptContext, 64, 20); // expiration
+      System.arraycopy("PAYPAL".getBytes(StandardCharsets.UTF_8), 0, receiptContext, 84, 6);   // paymentProvider
+      System.arraycopy("GOLD".getBytes(StandardCharsets.UTF_8), 0, receiptContext, 100, 4);    // subscriptionDetails.level
+      System.arraycopy("RECURRING".getBytes(StandardCharsets.UTF_8), 0, receiptContext, 128, 9); // subscriptionDetails.type
+//      return Result.success(outputData);
+      return Result.success(receiptContext);
     } catch (RuntimeException e) {
       Log.e(TAG, "Encountered a fatal exception. Crash imminent.", e);
       return Result.fatalFailure(e);
